@@ -67,6 +67,7 @@ This project implements a debate argument evaluation tool using Large Language M
     ├── constants.py                        # Stores constants, configuration values, thresholds
     ├── logger.py                          # Central logging mechanism
     └── dependency_registry.py              # Registers and manages dependency injection
+```
 
 ## Features
 
