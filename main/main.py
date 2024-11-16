@@ -19,6 +19,7 @@ async def main():
     logger.info("Starting the LLM Debate Argument Evaluator")
     # Initialize dependency injector
     injector = DependencyInjector()
+    injector.initialize_dependencies()
 
     # Create controller
     controller = Controller(injector)
