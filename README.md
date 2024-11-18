@@ -82,3 +82,7 @@ This project implements a debate argument evaluation tool using Large Language M
 ## Getting Started
 
 Run 'pip install -r requirements.txt' to install the dependencies.
+
+
+## KEY
+Setup env variables for CHATGPT_API_KEY and CHATGPT_API_ENDPOINT
