@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 from utils.logger import logger
 
-from .observer import DebateTreeSubject, Observer
+from visualization.observer import DebateTreeSubject, Observer
 
 
 class NodeExpansionHandler(Observer):
@@ -25,6 +25,7 @@ class NodeExpansionHandler(Observer):
         for i, argument in enumerate(new_arguments):
             new_node_id = f"{node_id}_{i}"
             debate_tree[new_node_id] = {
+                "id": new_node_id, # TEMP
                 "argument": argument["argument"],
                 "score": argument["score"],
                 "parent": node_id,
