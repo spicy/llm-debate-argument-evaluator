@@ -4,6 +4,7 @@ from typing import Dict, List
 from evaluation.api_clients.base_api_client import BaseAPIClient
 from utils.async_utils import run_async_tasks
 from utils.logger import log_execution_time, logger
+from config.environment import environment_config
 
 
 class ArgumentGenerationService:
@@ -58,7 +59,7 @@ class ArgumentGenerationService:
                 f"The argument should be a single argument and to the point."
             )
             response = await self.api_client.generate_text(
-                system_message=system_message, user_message=prompt, max_tokens=150
+                system_message=system_message, user_message=prompt, max_tokens=environment_config.MAX_TOKENS # Use environment variable for max_tokens
             )
             return response.strip()
 
@@ -78,10 +79,7 @@ class ArgumentGenerationService:
         for i, argument in enumerate(arguments_supporting + arguments_against):
             stance = "supporting" if i < num_arguments_per_side else "against"
             logger.debug(
-                f"Generated {stance} argument {i % num_arguments_per_side + 1}: {argument[:50]}..."
-            )
-            logger.info(
-                f"Generated {stance} argument {i % num_arguments_per_side + 1}: {argument}"
+                f"Generated {stance} argument {i % num_arguments_per_side + 1}: {argument}..."
             )
 
         logger.info(
