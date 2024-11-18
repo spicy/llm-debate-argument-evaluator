@@ -85,4 +85,9 @@ Run 'pip install -r requirements.txt' to install the dependencies.
 
 
 ## KEY
-Setup env variables for CHATGPT_API_KEY and CHATGPT_API_ENDPOINT
+Setup env variables for CHATGPT_API_KEY and CHATGPT_API_ENDPOINT 
+
+CHATGPT_API_KEY = {secret}
+CHATGPT_API_ENDPOINT = https://api.openai.com/v1/chat/completions
+DEBUG_MODE = true (for debugging)
+MAX_TOKENS = 10 (Just seeing it functions)
