@@ -80,6 +80,9 @@ class ArgumentGenerationService:
             logger.debug(
                 f"Generated {stance} argument {i % num_arguments_per_side + 1}: {argument[:50]}..."
             )
+            logger.info(
+                f"Generated {stance} argument {i % num_arguments_per_side + 1}: {argument}"
+            )
 
         logger.info(
             f"Generated {len(arguments_supporting)} supporting arguments and {len(arguments_against)} arguments against"
