@@ -1,3 +1,13 @@
+# TESTING AREA
+# Import utils folder
+import os
+import sys
+
+# Add the project root to the Python path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, project_root)
+# END OF TESTING AREA
+
 from typing import Any, Dict
 
 import matplotlib.pyplot as plt
@@ -5,7 +15,7 @@ import networkx as nx
 
 from utils.logger import logger
 
-from .observer import DebateTreeSubject, Observer
+from visualization.observer import DebateTreeSubject, Observer
 
 
 class TreeRenderer(Observer):
@@ -58,3 +68,18 @@ class TreeRenderer(Observer):
         r = max(0, min(255, int(255 * (1 - score))))
         g = max(0, min(255, int(255 * score)))
         return f"#{r:02x}{g:02x}00"
+
+
+if __name__ == "__main__":
+    # Example usage
+    debate_tree = {
+        "1": {"id": "1", "score": 0.5},
+        "2": {"id": "2", "score": 0.8, "parent": "1"},
+        "3": {"id": "3", "score": 0.2, "parent": "1"},
+        "4": {"id": "4", "score": 0.9, "parent": "2"},
+        "5": {"id": "5", "score": 0.6, "parent": "2"},
+    }
+
+    tree_renderer = TreeRenderer(DebateTreeSubject())
+
+    tree_renderer.render_tree(debate_tree)
