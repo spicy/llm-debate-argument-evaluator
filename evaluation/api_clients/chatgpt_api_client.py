@@ -35,18 +35,48 @@ class ChatGPTAPIClient(BaseAPIClient):
         except ClientError as e:
             logger.error(f"API request failed: {str(e)}")
             raise Exception(f"API request failed: {str(e)}")
+        
+    async def generate_text(self, system_message: str, prompt: str, max_tokens: int) -> str:
+        logger.info(f"Generating text for prompt: {prompt[:50]}...")
+        headers = self._get_headers()
+        data = self._prepare_request_data(prompt, system_message=system_message, max_tokens=max_tokens)
 
+        print("Generating argument from CHATGPT API")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    self.api_endpoint, headers=headers, json=data
+                ) as response:
+                    await self._check_response(response)
+                    result = await response.json()
+                    content = result["choices"][0]["message"]["content"]
+                    logger.info(f"Text generation completed")
+                    return content
+        except ClientError as e:
+            logger.error(f"API request failed: {str(e)}")
+            raise Exception(f"API request failed: {str(e)}")
+        
     def _get_headers(self) -> Dict[str, str]:
         return {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
 
-    def _prepare_request_data(self, prompt: str) -> Dict[str, Any]:
-        return {
-            "model": self.model,
-            "messages": [{"role": "user", "content": prompt}],
-        }
+    def _prepare_request_data(self, prompt: str, system_message: str = None, max_tokens: int = 0) -> Dict[str, Any]:
+        if system_message:
+            return {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt},
+                ],
+                "max_tokens": max_tokens,
+            }
+        else :
+            return {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+            }
 
     async def _check_response(self, response: aiohttp.ClientResponse) -> None:
         if response.status != 200:
