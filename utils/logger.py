@@ -3,6 +3,7 @@ import os
 import time
 from functools import wraps
 from typing import Any, Callable
+from config.environment import environment_config
 
 from config.logger_config import logger_config
 
@@ -12,7 +13,11 @@ def setup_logger(config=logger_config) -> logging.Logger:
     Sets up and configures the logger.
     """
     logger = logging.getLogger(config.LOGGER_NAME)
-    logger.setLevel(logging.INFO)
+    if (environment_config.DEBUG_MODE):
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+        
     formatter = logging.Formatter(config.LOG_FORMAT)
 
     console_handler = logging.StreamHandler()
