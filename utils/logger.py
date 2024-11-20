@@ -14,8 +14,10 @@ def setup_logger(config=logger_config) -> logging.Logger:
     """
     logger = logging.getLogger(config.LOGGER_NAME)
     if (environment_config.DEBUG_MODE):
+        # DEBUG MODE will print hidden information
         logger.setLevel(logging.DEBUG)
     else:
+        # Normal run mode
         logger.setLevel(logging.INFO)
         
     formatter = logging.Formatter(config.LOG_FORMAT)
@@ -28,8 +30,23 @@ def setup_logger(config=logger_config) -> logging.Logger:
     file_handler = logging.FileHandler(
         os.path.join(config.LOGS_FOLDER, config.LOG_FILE_NAME)
     )
+
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
+    # Current session log that only keeps track of last session
+    last_path = "/".join([config.LOGS_FOLDER, config.LAST_FILE_NAME])
+
+    entries = os.listdir(config.LOGS_FOLDER)
+    if config.LAST_FILE_NAME in entries:
+        os.remove(last_path)
+
+    session_handler = logging.FileHandler(
+        os.path.join(config.LOGS_FOLDER, config.LAST_FILE_NAME)
+    )
+
+    session_handler.setFormatter(formatter)
+    logger.addHandler(session_handler)
 
     return logger
 
