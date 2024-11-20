@@ -82,3 +82,12 @@ This project implements a debate argument evaluation tool using Large Language M
 ## Getting Started
 
 Run 'pip install -r requirements.txt' to install the dependencies.
+
+
+## KEY
+Setup env variables for CHATGPT_API_KEY and CHATGPT_API_ENDPOINT 
+
+CHATGPT_API_KEY = {secret}
+CHATGPT_API_ENDPOINT = https://api.openai.com/v1/chat/completions
+DEBUG_MODE = 1 for true (for debugging)
+MAX_TOKENS = 10 (Just seeing it functions)

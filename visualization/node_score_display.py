@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from utils.logger import logger
 
-from .observer import DebateTreeSubject, Observer
+from visualization.observer import DebateTreeSubject, Observer
 
 
 class NodeScoreDisplay(Observer):

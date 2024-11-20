@@ -3,6 +3,7 @@ import os
 import time
 from functools import wraps
 from typing import Any, Callable
+from config.environment import environment_config
 
 from config.logger_config import logger_config
 
@@ -12,7 +13,13 @@ def setup_logger(config=logger_config) -> logging.Logger:
     Sets up and configures the logger.
     """
     logger = logging.getLogger(config.LOGGER_NAME)
-    logger.setLevel(logging.INFO)
+    if (environment_config.DEBUG_MODE):
+        # DEBUG MODE will print hidden information
+        logger.setLevel(logging.DEBUG)
+    else:
+        # Normal run mode
+        logger.setLevel(logging.INFO)
+        
     formatter = logging.Formatter(config.LOG_FORMAT)
 
     console_handler = logging.StreamHandler()
@@ -23,8 +30,23 @@ def setup_logger(config=logger_config) -> logging.Logger:
     file_handler = logging.FileHandler(
         os.path.join(config.LOGS_FOLDER, config.LOG_FILE_NAME)
     )
+
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
+    # Current session log that only keeps track of last session
+    last_path = "/".join([config.LOGS_FOLDER, config.LAST_FILE_NAME])
+
+    entries = os.listdir(config.LOGS_FOLDER)
+    if config.LAST_FILE_NAME in entries:
+        os.remove(last_path)
+
+    session_handler = logging.FileHandler(
+        os.path.join(config.LOGS_FOLDER, config.LAST_FILE_NAME)
+    )
+
+    session_handler.setFormatter(formatter)
+    logger.addHandler(session_handler)
 
     return logger
 

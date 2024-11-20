@@ -22,19 +22,21 @@ class GenerateArgumentsCommand:
         )
         # Generate arguments
         arguments = await self.argument_generation_service.generate_arguments(
-            topic, subcategory
+            topic, subcategory, 1 #Changed from 3 to 1
         )
 
         logger.info(f"Generated {len(arguments)} arguments. Starting evaluation.")
         for i, argument in enumerate(arguments, 1):
             logger.debug(f"Evaluating argument {i}/{len(arguments)}")
-            # Evaluate each generated argument
-            evaluation_result = await self.evaluation_service.evaluate_argument(
-                argument
-            )
+            # # Evaluate each generated argument
+            # evaluation_result = await self.evaluation_service.evaluate_argument(
+            #     argument
+            # )
+            evaluation_result = 0.8
 
             # Create a new node with the argument and its evaluation
             new_node = {
+                "id": i, # Needed for priority queue
                 "argument": argument,
                 "category": subcategory,
                 "evaluation": evaluation_result,
