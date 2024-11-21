@@ -22,19 +22,19 @@ class Node(Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = x, y
 
-def line(points, x1: float, y1: float, x2: float, y2: float):
-    dy: float = y2 - y1
-    dx: float = x2 - x1
+# def line(points, x1: float, y1: float, x2: float, y2: float):
+#     dy: float = y2 - y1
+#     dx: float = x2 - x1
 
-    length: int = int(math.sqrt(dy * dy + dx * dx))
-    angle: float = math.atan2(dy, dx)
+#     length: int = int(math.sqrt(dy * dy + dx * dx))
+#     angle: float = math.atan2(dy, dx)
 
-    for i in range(length):
-        x = int(x1 + i * math.cos(angle))
-        y = int(y1 + i * math.sin(angle))
-        points.append((x - 1, y - 1))
-        points.append((x, y))
-        points.append((x + 1, y + 1))
+#     for i in range(length):
+#         x = int(x1 + i * math.cos(angle))
+#         y = int(y1 + i * math.sin(angle))
+#         points.append((x - 1, y - 1))
+#         points.append((x, y))
+#         points.append((x + 1, y + 1))
 
 class ModifiedRenderer(Observer):
     def __init__(self, debate_tree_subject: DebateTreeSubject):
@@ -69,7 +69,13 @@ class ModifiedRenderer(Observer):
 
     def update(self, subject):
         # Update debate_tree based on new information
-        pass
+        for node in subject:
+            if node not in self.debate_tree_subject:
+                # Handle new nodes
+                pass
+        
+        # After set the new debate_tree_subject
+        self.debate_tree_subject = subject
     
     def clear(self):
         self.points = []
@@ -117,13 +123,13 @@ class ModifiedRenderer(Observer):
 
             self.nodes.update()
 
-            line(self.points, 640, 360, self.x, self.y)
-            # pg.draw.line(self.screen, (233, 236, 239), (640, 360), (self.x, self.y), 5)
+            # line(self.points, 640, 360, self.x, self.y)
+            pg.draw.line(self.screen, (233, 236, 239), (640, 360), (self.x, self.y), 5)
 
             self.nodes.draw(self.screen)
             
-            for p in self.points:
-                gfxdraw.pixel(self.screen, p[0], p[1], (255, 255, 255))
+            # for p in self.points:
+            #     gfxdraw.pixel(self.screen, p[0], p[1], (255, 255, 255))
 
             self.screen.blit(self.text, (0, 600))
             
