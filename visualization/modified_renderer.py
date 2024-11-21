@@ -113,6 +113,7 @@ class ModifiedRenderer(Observer):
                     logger.debug("Mouse Up")
                 
                 if event.type == pg.KEYDOWN:
+                    # Remove any possible typing keys not to accidently press them while typing quit
                     if event.key == pg.K_q:
                         quit_event.set()
                     if event.key == pg.K_UP:
@@ -139,21 +140,18 @@ class ModifiedRenderer(Observer):
                 self.node.rect.center = (self.x, self.y)
 
             self.surface.fill((52, 58, 64))
-
-            self.screen.fill((0, 0, 0))
+            self.screen.fill((33, 37, 41))
 
             self.nodes.update()
 
             # line(self.points, 640, 360, self.x, self.y)
-            pg.draw.line(self.screen, (233, 236, 239), (640, 360), (self.x, self.y), 5)
-
+            pg.draw.line(self.surface, (233, 236, 239), (640, 360), (self.x, self.y), 5)
             self.nodes.draw(self.surface)
             
             # for p in self.points:
             #     gfxdraw.pixel(self.screen, p[0], p[1], (255, 255, 255))
 
             self.screen.blit(self.surface, self.source)
-
             self.screen.blit(self.text, (0, 600))
             
             self.clear()
