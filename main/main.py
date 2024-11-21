@@ -18,16 +18,19 @@ async def main():
     injector = DependencyInjector()
     injector.initialize_dependencies()
 
+    # Setup quit_event handler for both
+    quit_event = asyncio.Event()
+
     # Get renderer(pygame)
     renderer = injector.get("modified_renderer")
 
     # Create controller
-    controller = Controller(injector)
+    controller = Controller(injector, quit_event)
 
     # Start the application
     await asyncio.gather(
         controller.start(),
-        renderer.start()
+        renderer.start(quit_event)
     )
     logger.info("LLM Debate Argument Evaluator finished")
 
