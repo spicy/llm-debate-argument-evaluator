@@ -12,18 +12,23 @@ from dependency_injector import DependencyInjector
 from config.logger_config import logger_config
 from utils.logger import logger
 
-
 async def main():
     logger.info("Starting the LLM Debate Argument Evaluator")
     # Initialize dependency injector
     injector = DependencyInjector()
     injector.initialize_dependencies()
 
+    # Get renderer(pygame)
+    renderer = injector.get("modified_renderer")
+
     # Create controller
     controller = Controller(injector)
 
     # Start the application
-    await controller.start()
+    await asyncio.gather(
+        controller.start(),
+        renderer.start()
+    )
     logger.info("LLM Debate Argument Evaluator finished")
 
 
