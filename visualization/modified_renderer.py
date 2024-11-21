@@ -1,23 +1,27 @@
 import pygame as pg
+from pygame.sprite import Sprite
 from pygame import gfxdraw
 import asyncio
-import math
-
-import random # testing
 
 from utils.logger import logger
 
 from visualization.observer import DebateTreeSubject, Observer
 
-def line(points, x1: float, y1: float, x2: float, y2: float):
-    dy: float = y2 - y1
-    dx: float = x2 - x1
+class Node(Sprite):
+    def __init__(self):
+        super().__init__()
+        self.parent = 0
 
-    length: int = int(math.sqrt(dy * dy + dx * dx))
-    angle: float = math.atan2(dy, dx)
 
-    for i in range(length):
-        points.append((int(x1 + i * math.cos(angle)), int(y1 + i * math.sin(angle))))
+# def line(points, x1: float, y1: float, x2: float, y2: float):
+#     dy: float = y2 - y1
+#     dx: float = x2 - x1
+
+#     length: int = int(math.sqrt(dy * dy + dx * dx))
+#     angle: float = math.atan2(dy, dx)
+
+#     for i in range(length):
+#         points.append((int(x1 + i * math.cos(angle)), int(y1 + i * math.sin(angle))))
 
 class ModifiedRenderer(Observer):
     def __init__(self, debate_tree_subject: DebateTreeSubject):
@@ -25,13 +29,14 @@ class ModifiedRenderer(Observer):
         self.debate_tree_subject.attach(self)
         self.points = []
         self.running = True
-        
-        for _ in range(100):
-            self.points.append((random.randint(0, 1280), random.randint(0, 720)))
+        self.x, self.y = 0, 0
 
         pg.init()
         self.screen = pg.display.set_mode((1280, 720))
         pg.display.set_caption("Tree Renderer")
+        
+        self.font = pg.font.SysFont('Arial', 30)
+        self.text = self.font.render("Testing", True, (0, 0, 0))
         
 
     async def start(self):
@@ -50,21 +55,28 @@ class ModifiedRenderer(Observer):
                 if event.type == pg.QUIT:
                     self.running = False
                 if event.type == pg.MOUSEBUTTONDOWN:
-                    logger.debug("Mouse Down")
+                    logger.debug("Down")
+                if event.type == pg.MOUSEMOTION:
+                    self.x, self.y = pg.mouse.get_pos()
                 if event.type == pg.MOUSEBUTTONUP:
                     logger.debug("Mouse Up")
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_q:
+                        self.running = False
 
 
 
-            x, y = pg.mouse.get_pos()
 
             self.screen.fill((255, 255, 255))
 
-            line(self.points, 0, 0, x, y)
+            # line(self.points, 1280, 0, x, y)
+            pg.draw.line(self.screen, (100, 100, 100), (640, 360), (self.x, self.y), 5)
 
             for p in self.points:
                 gfxdraw.pixel(self.screen, p[0], p[1], (0, 0, 0))
-            pg.draw.circle(self.screen, (0, 0, 255), (x, y), 75)
+            pg.draw.circle(self.screen, (0, 0, 255), (self.x, self.y), 75)
+            pg.draw.circle(self.screen, (0, 0, 0), (640, 360), 50)
+            self.screen.blit(self.text, (0, 600))
             
             self.clear()
             pg.display.flip()
