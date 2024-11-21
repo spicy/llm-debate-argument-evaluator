@@ -59,6 +59,9 @@ class ModifiedRenderer(Observer):
 
         pg.init()
         self.screen = pg.display.set_mode((1280, 720))
+        self.surface = pg.Surface([3000, 3000])
+        self.source = pg.Rect(0, 0, 1280, 720)
+        
         pg.display.set_caption("Tree Renderer")
         
         self.font = pg.font.SysFont('Arial', 30)
@@ -85,12 +88,13 @@ class ModifiedRenderer(Observer):
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     quit_event.set()
+
                 if event.type == pg.MOUSEBUTTONDOWN:
                     self.mouse_pressed = True
                     if pg.mouse.get_pressed()[0]:
                         if not self.node_selected:
                             for node in self.nodes:
-                                if node.rect.collidepoint(event.pos):
+                                if node.rect.collidepoint((self.x, self.y)):
                                     self.node = node
                                     self.node_selected = True
                                     
@@ -99,37 +103,56 @@ class ModifiedRenderer(Observer):
                         else:
                             self.node = None
                             self.node_selected = False
-                    if pg.mouse.get_pressed()[2]:
-                        self.node = None
-                        self.node_selected = False
-                        logger.debug("Right Click")
-                        logger.debug("Node Dropped")
+
                 if event.type == pg.MOUSEMOTION:
-                    self.x, self.y = event.pos
+                    self.x = event.pos[0] - self.source.x
+                    self.y = event.pos[1] - self.source.y
+
                 if event.type == pg.MOUSEBUTTONUP:
                     self.mouse_pressed = False
                     logger.debug("Mouse Up")
-                    pass
+                
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_q:
                         quit_event.set()
+                    if event.key == pg.K_UP:
+                        self.source.y += 100
+                    if event.key == pg.K_DOWN:
+                        self.source.y -= 100
+
+                    if event.key == pg.K_LEFT:
+                        self.source.x += 100
+                    if event.key == pg.K_RIGHT:
+                        self.source.x -= 100
+                    
+                    if event.key == pg.K_MINUS:
+                        self.source.width /= 2
+                        self.source.height /= 2
+                    
+                    if event.key == pg.K_EQUALS:
+                        self.source.width *= 2
+                        self.source.height *= 2
+                
             
             if self.node_selected:
                 self.text = self.font.render(f"Argument: Node argument x:{self.node.rect.centerx} y:{self.node.rect.centery} pretend this is long and covers alot but it might go off screen\n But how about this this is taking forvere lol trying to go over the line", True, (0, 0, 0))
                 self.node.rect.center = (self.x, self.y)
 
+            self.surface.fill((52, 58, 64))
 
-            self.screen.fill((52, 58, 64))
+            self.screen.fill((0, 0, 0))
 
             self.nodes.update()
 
             # line(self.points, 640, 360, self.x, self.y)
             pg.draw.line(self.screen, (233, 236, 239), (640, 360), (self.x, self.y), 5)
 
-            self.nodes.draw(self.screen)
+            self.nodes.draw(self.surface)
             
             # for p in self.points:
             #     gfxdraw.pixel(self.screen, p[0], p[1], (255, 255, 255))
+
+            self.screen.blit(self.surface, self.source)
 
             self.screen.blit(self.text, (0, 600))
             
