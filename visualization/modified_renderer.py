@@ -37,7 +37,6 @@ class ModifiedRenderer(Observer):
         
         self.font = pg.font.SysFont('Arial', 30)
         self.text = self.font.render("Testing", True, (0, 0, 0))
-        
 
     async def start(self):
         await self.main_loop()
@@ -64,9 +63,6 @@ class ModifiedRenderer(Observer):
                     if event.key == pg.K_q:
                         self.running = False
 
-
-
-
             self.screen.fill((255, 255, 255))
 
             # line(self.points, 1280, 0, x, y)
@@ -81,4 +77,5 @@ class ModifiedRenderer(Observer):
             self.clear()
             pg.display.flip()
             await asyncio.sleep(1/60)
+            
         pg.quit()
