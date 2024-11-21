@@ -4,9 +4,10 @@ from utils.logger import log_execution_time, logger
 
 
 class Controller:
-    def __init__(self, injector):
+    def __init__(self, injector, quit_event):
         self.injector = injector
         self.user_interactions = UserInteractions(self)
+        self.quit_event = quit_event
 
     @log_execution_time
     async def start(self):
