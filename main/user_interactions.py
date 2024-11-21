@@ -8,14 +8,14 @@ class UserInteractions:
 
     async def main_loop(self):
         logger.info("Starting main interaction loop")
-        while True:
+        while not asyncio.Event.is_set(self.controller.quit_event):
             command = await asyncio.to_thread(input,
                 "Enter a command (expand/submit/generate/evaluate/quit): "
             )
             command = command.lower()
 
             if command == "quit":
-                logger.info("User requested to quit the application")
+                self.controller.quit_event.set()
                 break
             elif command == "expand":
                 node_id = await asyncio.to_thread(input, "Enter node ID to expand: ")
@@ -43,3 +43,6 @@ class UserInteractions:
             else:
                 logger.warning(f"User entered invalid command: {command}")
                 logger.info("Invalid command. Please try again.")
+
+
+        logger.info("User requested to quit the application")
