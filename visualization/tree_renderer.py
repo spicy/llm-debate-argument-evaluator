@@ -32,8 +32,9 @@ class TreeRenderer(Observer):
         self.G.clear()
         for node_id, node_data in debate_tree.items():
             self.G.add_node(node_id)
-            if node_data.get("parent"):
-                self.G.add_edge(node_data["parent"], node_id)
+            if node_data[2].get("parent") != -1:
+                logger.debug(f"Node: {node_id}, Parent: {node_data[2]["parent"]}")
+                self.G.add_edge(node_data[2]["parent"], node_id)
 
         pos = nx.spring_layout(self.G)
         plt.figure(figsize=(12, 8))
@@ -55,13 +56,13 @@ class TreeRenderer(Observer):
 
     def _get_node_colors(self, debate_tree: Dict[str, Any]):
         return [
-            self._score_to_color(node_data.get("score", 0))
+            self._score_to_color(node_data[2].get("evaluation", 0))
             for node_data in debate_tree.values()
         ]
 
     def _get_node_sizes(self, debate_tree: Dict[str, Any]):
         return [
-            1000 * node_data.get("score", 0.5) for node_data in debate_tree.values()
+            1000 * node_data[2].get("evaluation", 0.5) for node_data in debate_tree.values()
         ]
 
     def _score_to_color(self, score: float):
