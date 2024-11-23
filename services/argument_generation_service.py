@@ -54,4 +54,4 @@ class ArgumentGenerationService:
         logger.info(
             f"Generated {len(arguments_supporting)} supporting arguments and {len(arguments_against)} arguments against"
         )
-        return {"supporting": arguments_supporting, "against": arguments_against}
+        return arguments_supporting + arguments_against
