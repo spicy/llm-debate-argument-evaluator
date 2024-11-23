@@ -11,11 +11,12 @@ from utils.logger import logger
 from visualization.observer import DebateTreeSubject, Observer
 
 class Node(Sprite):
-    def __init__(self, x, y,):
+    def __init__(self, x, y, node_data):
         super().__init__()
         # self.parent = 0
         self.image = pg.Surface([100, 100])
         self.image.set_colorkey((0, 0, 0))
+        self.node_data = node_data
 
         pg.draw.circle(self.image, ((0, 0, 255)), (50, 50), 50)
 
@@ -47,11 +48,6 @@ class ModifiedRenderer(Observer):
         self.nodes = pg.sprite.Group()
         self.node = None
 
-        # TEMP test nodes
-        for _ in range(10):
-            new_node = Node(random.randint(0, 1280), random.randint(0, 720))
-            self.nodes.add(new_node)
-
         # Mouse position
         self.x, self.y = 0, 0
         self.mouse_pressed = False
@@ -72,10 +68,10 @@ class ModifiedRenderer(Observer):
 
     def update(self, subject):
         # Update debate_tree based on new information
-        for node in subject:
-            if node not in self.debate_tree_subject:
-                # Handle new nodes
-                pass
+        for node_data in subject.debate_tree.items():
+            if node_data not in self.debate_tree_subject:
+                new_node = Node(random.randint(0, 1280) - self.source.x, random.randint(0, 720) - self.source.y, node_data)
+                self.nodes.add(new_node)
         
         # After set the new debate_tree_subject
         self.debate_tree_subject = subject
@@ -145,6 +141,12 @@ class ModifiedRenderer(Observer):
             self.nodes.update()
 
             # line(self.points, 640, 360, self.x, self.y)
+            for node in self.nodes:
+                if node.node_data[2]["parent"] != -1:
+                    for parent_node in self.nodes:
+                        if node.node_data[2]["parent"] == parent_node.node_data[1]:
+                            pg.draw.line(self.surface, (233, 236, 239), (node.rect.centerx, node.rect.centery), (parent_node.rect.centerx, parent_node.rect.centery), 5)
+
             pg.draw.line(self.surface, (233, 236, 239), (640, 360), (self.x, self.y), 5)
             self.nodes.draw(self.surface)
             
