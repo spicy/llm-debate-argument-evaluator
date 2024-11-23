@@ -27,10 +27,12 @@ class UserInteractions:
             elif command == "generate":
                 topic = input("Enter the debate topic: ")
                 subcategory = input("Enter the subcategory: ")
+                support = input(f"Provide a prompt that supports {subcategory} in terms of {topic}:")
+                against = input(f"Provide a prompt that is against {subcategory} in terms of {topic}:")
                 logger.info(
-                    f"User requested to generate arguments for topic: {topic}, subcategory: {subcategory}"
+                    f"User requested to generate arguments for topic: {topic}, subcategory: {subcategory}, support: {support}, against: {against}"
                 )
-                await self.controller.generate_arguments(topic, subcategory)
+                await self.controller.generate_arguments(topic, subcategory, support, against)
             elif command == "evaluate":
                 arguments = input(
                     "Enter arguments to evaluate (comma-separated): "
