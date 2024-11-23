@@ -25,12 +25,12 @@ class Controller:
         await submit_argument_command.execute(argument, category)
 
     @log_execution_time
-    async def generate_arguments(self, topic, subcategory):
+    async def generate_arguments(self, topic, subcategory, support, against):
         logger.info(
-            f"Generating arguments for topic: {topic}, subcategory: {subcategory}"
+            f"Generating arguments for topic: {topic}, subcategory: {subcategory} supporting_prompt: {support}, against_prompt: {against}"
         )
         generate_arguments_command = self.injector.get("generate_arguments_command")
-        await generate_arguments_command.execute(topic, subcategory)
+        await generate_arguments_command.execute(topic, subcategory, support, against)
 
     @log_execution_time
     async def evaluate_arguments(self, arguments):
