@@ -4,6 +4,7 @@ from utils.logger import logger
 
 from visualization.observer import DebateTreeSubject, Observer
 
+#NOTE This is class is not used anymore
 
 class NodeExpansionHandler(Observer):
     def __init__(self, debate_tree_subject: DebateTreeSubject):
