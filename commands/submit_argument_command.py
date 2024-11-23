@@ -27,6 +27,7 @@ class SubmitArgumentCommand:
             "argument": argument,
             "category": category,
             "evaluation": evaluation_result,
+            "parent": -1
         }
 
         # Add the new node to the priority queue
