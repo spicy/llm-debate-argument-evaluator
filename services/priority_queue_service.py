@@ -47,3 +47,7 @@ class PriorityQueueService:
                 return node
         logger.error("Attempted to pop from an empty priority queue")
         raise KeyError("pop from an empty priority queue")
+    
+    # Allows for new nodes to be unique when they enter the queue
+    def get_unique_id(self): 
+        return self.counter
