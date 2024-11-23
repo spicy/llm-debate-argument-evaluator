@@ -17,11 +17,14 @@ class ExpandNodeCommand:
     async def execute(self, node_id: str):
         logger.debug(f"Attempting to expand node with ID {node_id}")
         # Retrieve the node from the priority queue
-        node = self.priority_queue_service.get_node(node_id)
-
+        node = self.priority_queue_service.get_node(int(node_id))
+        logger.debug(f"Node: {node}")
         if not node:
             logger.warning(f"Node with ID {node_id} not found.")
             return
+
+        # Expand the node like it was before in the generation arguments "make 3 more arguments that support this" and "make 3 more arguments that are against this"
+        # arguments = self.argument_generation_service.generate_arguments()
 
         # Expand the node in the debate tree
         expanded_nodes = await self.node_expansion_handler.expand_node(node)
