@@ -41,6 +41,7 @@ class GenerateArgumentsCommand:
                 "argument": argument,
                 "category": subcategory,
                 "evaluation": evaluation_result,
+                "parent": 0 # if its default
             }
 
             # Add the new node to the priority queue
