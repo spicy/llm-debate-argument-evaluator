@@ -2,6 +2,7 @@ import heapq
 
 from config import priority_queue_config
 from utils.logger import logger
+from utils.dependency_registry import dependency_registry
 
 
 class PriorityQueueService:
@@ -24,6 +25,10 @@ class PriorityQueueService:
         self.entry_finder[node["id"]] = entry
         heapq.heappush(self.queue, entry)
         self.counter += 1
+        
+        tree = dependency_registry.get("debate_tree_subject")
+        tree.debate_tree = self.entry_finder
+
         logger.debug(f"Added node {node['id']} with priority {priority}")
 
     def remove_node(self, node_id):
@@ -33,7 +38,7 @@ class PriorityQueueService:
 
     def get_node(self, node_id):
         node = (
-            self.entry_finder.get(node_id)[-1] if node_id in self.entry_finder else None
+            self.entry_finder.get(node_id)[2] if node_id in self.entry_finder else None
         )
         logger.debug(f"Retrieved node {node_id}: {'Found' if node else 'Not found'}")
         return node
