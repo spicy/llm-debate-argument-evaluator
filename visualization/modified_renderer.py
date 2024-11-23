@@ -9,7 +9,6 @@ import random # TEMP
 from utils.logger import logger
 
 from visualization.observer import DebateTreeSubject, Observer
-
 class Node(Sprite):
     def __init__(self, x, y, node_data):
         super().__init__()
@@ -18,10 +17,16 @@ class Node(Sprite):
         self.image.set_colorkey((0, 0, 0))
         self.node_data = node_data
 
-        pg.draw.circle(self.image, ((0, 0, 255)), (50, 50), 50)
+        self.color = self._score_to_color(node_data[2]["evaluation"])
+        pg.draw.circle(self.image, (self.color), (50, 50), 50)
 
         self.rect = self.image.get_rect()
         self.rect.center = x, y
+
+    def _score_to_color(self, score: float):
+        r = max(0, min(255, int(255 * (1 - score))))
+        g = max(0, min(255, int(255 * score)))
+        return (r, g, 0)
 
 # def line(points, x1: float, y1: float, x2: float, y2: float):
 #     dy: float = y2 - y1
@@ -43,9 +48,7 @@ class ModifiedRenderer(Observer):
         self.debate_tree_subject.attach(self)
 
         # Points and nodes
-        self.points = []
-        self.connections = [] # Connections between nodes
-        self.nodes = pg.sprite.Group()
+        self.nodes = []
         self.node = None
 
         # Mouse position
@@ -68,16 +71,12 @@ class ModifiedRenderer(Observer):
 
     def update(self, subject):
         # Update debate_tree based on new information
-        for node_data in subject.debate_tree.items():
-            if node_data not in self.debate_tree_subject:
-                new_node = Node(random.randint(0, 1280) - self.source.x, random.randint(0, 720) - self.source.y, node_data)
-                self.nodes.add(new_node)
-        
-        # After set the new debate_tree_subject
-        self.debate_tree_subject = subject
-    
-    def clear(self):
-        self.points = []
+        self.nodes = []
+        for node_id, node_data in subject.debate_tree.items():
+            new_node = Node(random.randint(0, 1280) - self.source.x, random.randint(0, 720) - self.source.y, node_data)
+            self.nodes.append(new_node)
+
+        logger.info("Complete adding new nodes to modified renderer")
 
     async def main_loop(self, quit_event):
         while not asyncio.Event.is_set(quit_event):
@@ -132,23 +131,24 @@ class ModifiedRenderer(Observer):
                 
             
             if self.node_selected:
-                self.text = self.font.render(f"Argument: Node argument x:{self.node.rect.centerx} y:{self.node.rect.centery} pretend this is long and covers alot but it might go off screen\n But how about this this is taking forvere lol trying to go over the line", True, (0, 0, 0))
+                self.text = self.font.render(f"Argument: {self.node.node_data[2]["argument"]}", True, (0, 0, 0))
                 self.node.rect.center = (self.x, self.y)
 
             self.surface.fill((52, 58, 64))
             self.screen.fill((33, 37, 41))
 
-            self.nodes.update()
+            for node in self.nodes:
+                self.screen.blit(node.image, node.rect)
 
             # line(self.points, 640, 360, self.x, self.y)
             for node in self.nodes:
                 if node.node_data[2]["parent"] != -1:
-                    for parent_node in self.nodes:
-                        if node.node_data[2]["parent"] == parent_node.node_data[1]:
-                            pg.draw.line(self.surface, (233, 236, 239), (node.rect.centerx, node.rect.centery), (parent_node.rect.centerx, parent_node.rect.centery), 5)
+                    pg.draw.line(self.surface, (233, 236, 239), (node.rect.centerx, node.rect.centery), (self.nodes[node.node_data[2]["parent"]].rect.centerx, self.nodes[node.node_data[2]["parent"]].rect.centery), 5)
 
             pg.draw.line(self.surface, (233, 236, 239), (640, 360), (self.x, self.y), 5)
-            self.nodes.draw(self.surface)
+
+            for node in self.nodes:
+                self.surface.blit(node.image, node.rect)
             
             # for p in self.points:
             #     gfxdraw.pixel(self.screen, p[0], p[1], (255, 255, 255))
@@ -156,7 +156,6 @@ class ModifiedRenderer(Observer):
             self.screen.blit(self.surface, self.source)
             self.screen.blit(self.text, (0, 600))
             
-            self.clear()
             pg.display.flip()
             await asyncio.sleep(1/60)
 
