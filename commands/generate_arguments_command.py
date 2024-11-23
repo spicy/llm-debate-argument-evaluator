@@ -21,7 +21,7 @@ class GenerateArgumentsCommand:
             f"Generating arguments for topic: {topic}, subcategory: {subcategory}"
         )
         # Generate arguments
-        arguments = await self.argument_generation_service.generate_arguments(
+        arguments = await self.argument_generation_service.generate_arguments( # Returns Dict{str: List[str]}
             topic, subcategory, 1 #Changed from 3 to 1
         )
 
@@ -35,8 +35,9 @@ class GenerateArgumentsCommand:
             evaluation_result = 0.8
 
             # Create a new node with the argument and its evaluation
+            # Needs knowledge of existing nodes to get its id.
             new_node = {
-                "id": i, # Needed for priority queue
+                "id": self.priority_queue_service.get_unique_id(), # Needed for priority queue 
                 "argument": argument,
                 "category": subcategory,
                 "evaluation": evaluation_result,
