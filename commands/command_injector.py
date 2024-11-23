@@ -14,11 +14,10 @@ class CommandInjector:
         evaluation_service = registry.get("evaluation_service")
         argument_generation_service = registry.get("argument_generation_service")
         score_aggregator_service = registry.get("score_aggregator_service")
-        node_expansion_handler = registry.get("node_expansion_handler")
 
         registry.register(
             "expand_node_command",
-            ExpandNodeCommand(priority_queue_service, node_expansion_handler),
+            ExpandNodeCommand(argument_generation_service, evaluation_service, priority_queue_service),
         )
         registry.register(
             "submit_argument_command",
