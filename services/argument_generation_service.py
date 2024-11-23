@@ -10,7 +10,7 @@ from config.environment import environment_config
 class ArgumentGenerationService:
     def __init__(self, api_client: BaseAPIClient):
         self.prompts = {
-            "abortion": {
+            "abortion": { # REMOVE SOON
                 "Women's Rights": {
                     "supporting": [
                         "How does access to abortion support women's bodily autonomy?",
@@ -33,6 +33,9 @@ class ArgumentGenerationService:
                 },
             }
             # Add more topics and subcategories as needed
+
+            # NOTE: Topics shouldn't be hand picked here. THe user decides what the topic is, the category, and chooses to user their own supporting and against questions
+
         }
         self.api_client = api_client
         logger.info("ArgumentGenerationService initialized")
@@ -79,7 +82,7 @@ class ArgumentGenerationService:
         for i, argument in enumerate(arguments_supporting + arguments_against):
             stance = "supporting" if i < num_arguments_per_side else "against"
             logger.debug(
-                f"Generated {stance} argument {i % num_arguments_per_side + 1}: {argument}..."
+                f"Generated {stance} argument {i % num_arguments_per_side + 1}: {argument}"
             )
 
         logger.info(
