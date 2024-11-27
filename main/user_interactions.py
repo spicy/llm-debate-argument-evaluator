@@ -1,6 +1,7 @@
+import asyncio
+
 from utils.logger import logger
 
-import asyncio
 
 class UserInteractions:
     def __init__(self, controller):
@@ -9,8 +10,8 @@ class UserInteractions:
     async def main_loop(self):
         logger.info("Starting main interaction loop")
         while not asyncio.Event.is_set(self.controller.quit_event):
-            command = await asyncio.to_thread(input,
-                "Enter a command (expand/submit/generate/evaluate/quit): "
+            command = await asyncio.to_thread(
+                input, "Enter a command (expand/submit/generate/evaluate/quit): "
             )
             command = command.lower()
 
@@ -29,15 +30,23 @@ class UserInteractions:
             elif command == "generate":
                 topic = await asyncio.to_thread(input, "Enter the debate topic: ")
                 subcategory = await asyncio.to_thread(input, "Enter the subcategory: ")
-                support = await asyncio.to_thread(input, f"Provide a prompt that supports {subcategory} in terms of {topic}:")
-                against = await asyncio.to_thread(input, f"Provide a prompt that is against {subcategory} in terms of {topic}:")
+                support = await asyncio.to_thread(
+                    input,
+                    f"Provide a prompt that supports {subcategory} in terms of {topic}:",
+                )
+                against = await asyncio.to_thread(
+                    input,
+                    f"Provide a prompt that is against {subcategory} in terms of {topic}:",
+                )
                 logger.info(
                     f"User requested to generate arguments for topic: {topic}, subcategory: {subcategory}, support: {support}, against: {against}"
                 )
-                await self.controller.generate_arguments(topic, subcategory, support, against)
+                await self.controller.generate_arguments(
+                    topic, subcategory, support, against
+                )
             elif command == "evaluate":
-                arguments = await asyncio.to_thread(input,
-                    "Enter arguments to evaluate (comma-separated): "
+                arguments = await asyncio.to_thread(
+                    input, "Enter arguments to evaluate (comma-separated): "
                 )
                 arguments = arguments.split(",")
                 logger.info(f"User requested to evaluate {len(arguments)} arguments")
@@ -45,6 +54,5 @@ class UserInteractions:
             else:
                 logger.warning(f"User entered invalid command: {command}")
                 logger.info("Invalid command. Please try again.")
-
 
         logger.info("User requested to quit the application")

@@ -1,8 +1,8 @@
 import heapq
 
 from config import priority_queue_config
-from utils.logger import logger
 from utils.dependency_registry import dependency_registry
+from utils.logger import logger
 
 
 class PriorityQueueService:
@@ -25,7 +25,7 @@ class PriorityQueueService:
         self.entry_finder[node["id"]] = entry
         heapq.heappush(self.queue, entry)
         self.counter += 1
-        
+
         tree = dependency_registry.get("debate_tree_subject")
         tree.debate_tree = self.entry_finder
 
@@ -52,7 +52,7 @@ class PriorityQueueService:
                 return node
         logger.error("Attempted to pop from an empty priority queue")
         raise KeyError("pop from an empty priority queue")
-    
+
     # Allows for new nodes to be unique when they enter the queue
-    def get_unique_id(self): 
+    def get_unique_id(self):
         return self.counter

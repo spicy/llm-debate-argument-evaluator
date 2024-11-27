@@ -1,10 +1,10 @@
 import random
 from typing import Dict, List
 
+from config.environment import environment_config
 from evaluation.api_clients.base_api_client import BaseAPIClient
 from utils.async_utils import run_async_tasks
 from utils.logger import log_execution_time, logger
-from config.environment import environment_config
 
 
 class ArgumentGenerationService:
@@ -14,7 +14,12 @@ class ArgumentGenerationService:
 
     @log_execution_time
     async def generate_arguments(
-        self, topic: str, subcategory: str, support: str, against: str, num_arguments_per_side: int = 3
+        self,
+        topic: str,
+        subcategory: str,
+        support: str,
+        against: str,
+        num_arguments_per_side: int = 3,
     ) -> Dict[str, List[str]]:
         logger.info(
             f"Generating {num_arguments_per_side * 2} arguments for {topic} - {subcategory}"
@@ -28,7 +33,9 @@ class ArgumentGenerationService:
                 f"The argument should be a single argument and to the point."
             )
             response = await self.api_client.generate_text(
-                system_message=system_message, user_message=prompt, max_tokens=environment_config.MAX_TOKENS # Use environment variable for max_tokens
+                system_message=system_message,
+                user_message=prompt,
+                max_tokens=environment_config.MAX_TOKENS,  # Use environment variable for max_tokens
             )
             return response.strip()
 

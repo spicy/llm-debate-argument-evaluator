@@ -1,16 +1,16 @@
-import pygame as pg
-from pygame.sprite import Sprite
 import asyncio
-
 import random
 
-from utils.logger import logger
+import pygame as pg
+from pygame.sprite import Sprite
 
+from utils.logger import logger
 from visualization.observer import DebateTreeSubject, Observer
 
 # Font used for all text
 pg.init()
 font = pg.font.SysFont("Arial", 30)
+
 
 class Node(Sprite):
     def __init__(self, x, y, node_data):
@@ -34,6 +34,7 @@ class Node(Sprite):
         g = max(0, min(255, int(255 * score)))
         return (r, g, 0)
 
+
 class TreeRenderer(Observer):
     def __init__(self, debate_tree_subject: DebateTreeSubject):
         self.debate_tree_subject = debate_tree_subject
@@ -51,9 +52,9 @@ class TreeRenderer(Observer):
         self.screen = pg.display.set_mode((1280, 720))
         self.surface = pg.Surface([3000, 3000])
         self.source = pg.Rect(0, 0, 1280, 720)
-        
+
         pg.display.set_caption("Tree Renderer")
-        
+
         self.text = font.render("Testing", True, (0, 0, 0))
 
     async def start(self, quit_event):
@@ -63,7 +64,11 @@ class TreeRenderer(Observer):
         # Update debate_tree based on new information
         self.nodes = []
         for node_id, node_data in subject.debate_tree.items():
-            new_node = Node(random.randint(0, 1280) - self.source.x, random.randint(0, 720) - self.source.y, node_data)
+            new_node = Node(
+                random.randint(0, 1280) - self.source.x,
+                random.randint(0, 720) - self.source.y,
+                node_data,
+            )
             self.nodes.append(new_node)
 
         logger.info("Complete adding new nodes to modified renderer")
@@ -82,7 +87,7 @@ class TreeRenderer(Observer):
                                 if node.rect.collidepoint((self.x, self.y)):
                                     self.node = node
                                     self.node_selected = True
-                                    
+
                             logger.debug("Left Click")
                             logger.debug("Node clicked")
                         else:
@@ -96,7 +101,7 @@ class TreeRenderer(Observer):
                 if event.type == pg.MOUSEBUTTONUP:
                     self.mouse_pressed = False
                     logger.debug("Mouse Up")
-                
+
                 if event.type == pg.KEYDOWN:
                     # Remove any possible typing keys not to accidently press them while typing quit
                     if event.key == pg.K_UP:
@@ -108,18 +113,19 @@ class TreeRenderer(Observer):
                         self.source.x += 100
                     if event.key == pg.K_RIGHT:
                         self.source.x -= 100
-                    
+
                     if event.key == pg.K_MINUS:
                         self.source.width /= 2
                         self.source.height /= 2
-                    
+
                     if event.key == pg.K_EQUALS:
                         self.source.width *= 2
                         self.source.height *= 2
-                
-            
+
             if self.node_selected:
-                self.text = font.render(f"Argument: {self.node.node_data[2]["argument"]}", True, (0, 0, 0))
+                self.text = font.render(
+                    f"Argument: {self.node.node_data[2]["argument"]}", True, (0, 0, 0)
+                )
                 self.node.rect.center = (self.x, self.y)
 
             # Draw backgrounds
@@ -128,7 +134,16 @@ class TreeRenderer(Observer):
 
             for node in self.nodes:
                 if node.node_data[2]["parent"] != -1:
-                    pg.draw.line(self.surface, (233, 236, 239), (node.rect.centerx, node.rect.centery), (self.nodes[node.node_data[2]["parent"]].rect.centerx, self.nodes[node.node_data[2]["parent"]].rect.centery), 5)
+                    pg.draw.line(
+                        self.surface,
+                        (233, 236, 239),
+                        (node.rect.centerx, node.rect.centery),
+                        (
+                            self.nodes[node.node_data[2]["parent"]].rect.centerx,
+                            self.nodes[node.node_data[2]["parent"]].rect.centery,
+                        ),
+                        5,
+                    )
 
             pg.draw.line(self.surface, (233, 236, 239), (640, 360), (self.x, self.y), 5)
 
@@ -137,8 +152,8 @@ class TreeRenderer(Observer):
 
             self.screen.blit(self.surface, self.source)
             self.screen.blit(self.text, (0, 600))
-            
+
             pg.display.flip()
-            await asyncio.sleep(1/60)
+            await asyncio.sleep(1 / 60)
 
         pg.quit()

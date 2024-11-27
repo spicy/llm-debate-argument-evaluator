@@ -1,7 +1,7 @@
 from .node_score_display import NodeScoreDisplay
-from .observer import Observer, DebateTreeSubject
-from .visualization_injector import VisualizationInjector
+from .observer import DebateTreeSubject, Observer
 from .tree_renderer import TreeRenderer
+from .visualization_injector import VisualizationInjector
 
 __all__ = [
     "NodeScoreDisplay",

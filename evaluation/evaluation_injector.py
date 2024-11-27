@@ -18,7 +18,7 @@ class EvaluationInjector:
 
         # evaluation_service = EvaluationService(model_factory)
         # score_aggregator_service = ScoreAggregatorService()
-# 
+        #
         # registry.register("evaluation_service", evaluation_service)
         # registry.register("score_aggregator_service", score_aggregator_service)
 

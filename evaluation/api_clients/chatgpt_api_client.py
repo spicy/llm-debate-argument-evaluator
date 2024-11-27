@@ -35,11 +35,15 @@ class ChatGPTAPIClient(BaseAPIClient):
         except ClientError as e:
             logger.error(f"API request failed: {str(e)}")
             raise Exception(f"API request failed: {str(e)}")
-        
-    async def generate_text(self, system_message: str, prompt: str, max_tokens: int) -> str:
+
+    async def generate_text(
+        self, system_message: str, prompt: str, max_tokens: int
+    ) -> str:
         logger.info(f"Generating text for prompt: {prompt[:50]}...")
         headers = self._get_headers()
-        data = self._prepare_request_data(prompt, system_message=system_message, max_tokens=max_tokens)
+        data = self._prepare_request_data(
+            prompt, system_message=system_message, max_tokens=max_tokens
+        )
 
         print("Generating argument from CHATGPT API")
         try:
@@ -50,19 +54,21 @@ class ChatGPTAPIClient(BaseAPIClient):
                     await self._check_response(response)
                     result = await response.json()
                     content = result["choices"][0]["message"]["content"]
-                    logger.info(f"Text generation completed")
+                    logger.info("Text generation completed")
                     return content
         except ClientError as e:
             logger.error(f"API request failed: {str(e)}")
             raise Exception(f"API request failed: {str(e)}")
-        
+
     def _get_headers(self) -> Dict[str, str]:
         return {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
 
-    def _prepare_request_data(self, prompt: str, system_message: str = None, max_tokens: int = 0) -> Dict[str, Any]:
+    def _prepare_request_data(
+        self, prompt: str, system_message: str = None, max_tokens: int = 0
+    ) -> Dict[str, Any]:
         if system_message:
             return {
                 "model": self.model,
@@ -72,7 +78,7 @@ class ChatGPTAPIClient(BaseAPIClient):
                 ],
                 "max_tokens": max_tokens,
             }
-        else :
+        else:
             return {
                 "model": self.model,
                 "messages": [{"role": "user", "content": prompt}],

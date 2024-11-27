@@ -17,7 +17,9 @@ class CommandInjector:
 
         registry.register(
             "expand_node_command",
-            ExpandNodeCommand(argument_generation_service, evaluation_service, priority_queue_service),
+            ExpandNodeCommand(
+                argument_generation_service, evaluation_service, priority_queue_service
+            ),
         )
         registry.register(
             "submit_argument_command",
