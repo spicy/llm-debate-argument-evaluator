@@ -55,6 +55,7 @@ class TreeRenderer(Observer):
         pg.display.set_caption("Tree Renderer")
         
         self.text = font.render("Testing", True, (0, 0, 0))
+        self.score = font.render("Score: 0.0", True, (0, 0, 0))
 
     async def start(self, quit_event):
         await self.main_loop(quit_event)
@@ -119,7 +120,8 @@ class TreeRenderer(Observer):
                 
             
             if self.node_selected:
-                self.text = font.render(f"Argument: {self.node.node_data[2]["argument"]}", True, (0, 0, 0))
+                self.text = font.render(f"Argument: {self.node.node_data[2]["argument"]}", True, (255, 255, 255))
+                self.score = font.render(f"Score: {int(self.node.node_data[2]["evaluation"] * 10000) / 100.00} / 100.00", True, (255, 255, 255))
                 self.node.rect.center = (self.x, self.y)
 
             # Draw backgrounds
@@ -137,6 +139,7 @@ class TreeRenderer(Observer):
 
             self.screen.blit(self.surface, self.source)
             self.screen.blit(self.text, (0, 600))
+            self.screen.blit(self.score, (0, 650))
             
             pg.display.flip()
             await asyncio.sleep(1/60)
