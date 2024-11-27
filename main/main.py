@@ -22,7 +22,7 @@ async def main():
     quit_event = asyncio.Event()
 
     # Get renderer(pygame)
-    renderer = injector.get("modified_renderer")
+    renderer = injector.get("tree_renderer")
 
     # Create controller
     controller = Controller(injector, quit_event)

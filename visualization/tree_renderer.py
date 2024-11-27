@@ -1,24 +1,30 @@
 import pygame as pg
 from pygame.sprite import Sprite
-from pygame import gfxdraw
-import math
 import asyncio
 
-import random # TEMP
+import random
 
 from utils.logger import logger
 
 from visualization.observer import DebateTreeSubject, Observer
+
+# Font used for all text
+pg.init()
+font = pg.font.SysFont("Arial", 30)
+
 class Node(Sprite):
     def __init__(self, x, y, node_data):
         super().__init__()
-        # self.parent = 0
         self.image = pg.Surface([100, 100])
-        self.image.set_colorkey((0, 0, 0))
+        self.image.fill((255, 0, 0))
+        self.image.set_colorkey((255, 0, 0))
         self.node_data = node_data
 
         self.color = self._score_to_color(node_data[2]["evaluation"])
+        self.text = font.render(f"{node_data[1]}", True, (0, 0, 0))
+
         pg.draw.circle(self.image, (self.color), (50, 50), 50)
+        self.image.blit(self.text, (40, 35))
 
         self.rect = self.image.get_rect()
         self.rect.center = x, y
@@ -28,21 +34,7 @@ class Node(Sprite):
         g = max(0, min(255, int(255 * score)))
         return (r, g, 0)
 
-# def line(points, x1: float, y1: float, x2: float, y2: float):
-#     dy: float = y2 - y1
-#     dx: float = x2 - x1
-
-#     length: int = int(math.sqrt(dy * dy + dx * dx))
-#     angle: float = math.atan2(dy, dx)
-
-#     for i in range(length):
-#         x = int(x1 + i * math.cos(angle))
-#         y = int(y1 + i * math.sin(angle))
-#         points.append((x - 1, y - 1))
-#         points.append((x, y))
-#         points.append((x + 1, y + 1))
-
-class ModifiedRenderer(Observer):
+class TreeRenderer(Observer):
     def __init__(self, debate_tree_subject: DebateTreeSubject):
         self.debate_tree_subject = debate_tree_subject
         self.debate_tree_subject.attach(self)
@@ -56,15 +48,13 @@ class ModifiedRenderer(Observer):
         self.mouse_pressed = False
         self.node_selected = False
 
-        pg.init()
         self.screen = pg.display.set_mode((1280, 720))
         self.surface = pg.Surface([3000, 3000])
         self.source = pg.Rect(0, 0, 1280, 720)
         
         pg.display.set_caption("Tree Renderer")
         
-        self.font = pg.font.SysFont('Arial', 30)
-        self.text = self.font.render("Testing", True, (0, 0, 0))
+        self.text = font.render("Testing", True, (0, 0, 0))
 
     async def start(self, quit_event):
         await self.main_loop(quit_event)
@@ -109,8 +99,6 @@ class ModifiedRenderer(Observer):
                 
                 if event.type == pg.KEYDOWN:
                     # Remove any possible typing keys not to accidently press them while typing quit
-                    if event.key == pg.K_q:
-                        quit_event.set()
                     if event.key == pg.K_UP:
                         self.source.y += 100
                     if event.key == pg.K_DOWN:
@@ -131,16 +119,13 @@ class ModifiedRenderer(Observer):
                 
             
             if self.node_selected:
-                self.text = self.font.render(f"Argument: {self.node.node_data[2]["argument"]}", True, (0, 0, 0))
+                self.text = font.render(f"Argument: {self.node.node_data[2]["argument"]}", True, (0, 0, 0))
                 self.node.rect.center = (self.x, self.y)
 
+            # Draw backgrounds
             self.surface.fill((52, 58, 64))
             self.screen.fill((33, 37, 41))
 
-            for node in self.nodes:
-                self.screen.blit(node.image, node.rect)
-
-            # line(self.points, 640, 360, self.x, self.y)
             for node in self.nodes:
                 if node.node_data[2]["parent"] != -1:
                     pg.draw.line(self.surface, (233, 236, 239), (node.rect.centerx, node.rect.centery), (self.nodes[node.node_data[2]["parent"]].rect.centerx, self.nodes[node.node_data[2]["parent"]].rect.centery), 5)
@@ -149,9 +134,6 @@ class ModifiedRenderer(Observer):
 
             for node in self.nodes:
                 self.surface.blit(node.image, node.rect)
-            
-            # for p in self.points:
-            #     gfxdraw.pixel(self.screen, p[0], p[1], (255, 255, 255))
 
             self.screen.blit(self.surface, self.source)
             self.screen.blit(self.text, (0, 600))
