@@ -28,7 +28,7 @@ class ArgumentGenerationService:
                 f"The argument should be a single argument and to the point."
             )
             response = await self.api_client.generate_text(
-                system_message=system_message, user_message=prompt, max_tokens=environment_config.MAX_TOKENS # Use environment variable for max_tokens
+                system_message=system_message, user_message=prompt 
             )
             return response.strip()
 

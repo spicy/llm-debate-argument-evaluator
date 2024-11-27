@@ -45,5 +45,5 @@ class ChatGPTModel(BaseLLMModel):
     async def evaluate_factual_accuracy(self, argument: str) -> float:
         return await self._evaluate("factual_accuracy", argument)
     
-    async def generate_text(self, system_message: str, user_message: str, max_tokens: int) -> str:
-        return await self.api_client.generate_text(system_message, user_message, max_tokens)
+    async def generate_text(self, system_message: str, user_message: str) -> str:
+        return await self.api_client.generate_text(system_message, user_message)

@@ -3,7 +3,7 @@ from typing import Any, Dict
 import aiohttp
 from aiohttp import ClientError
 
-from config.environment import get_env_variable
+from config.environment import get_env_variable, environment_config
 from utils.logger import log_execution_time, logger
 
 from .base_api_client import BaseAPIClient
@@ -36,7 +36,7 @@ class ChatGPTAPIClient(BaseAPIClient):
             logger.error(f"API request failed: {str(e)}")
             raise Exception(f"API request failed: {str(e)}")
         
-    async def generate_text(self, system_message: str, prompt: str, max_tokens: int) -> str:
+    async def generate_text(self, system_message: str, prompt: str, max_tokens: int=environment_config.MAX_TOKENS) -> str:
         logger.info(f"Generating text for prompt: {prompt[:50]}...")
         headers = self._get_headers()
         data = self._prepare_request_data(prompt, system_message=system_message, max_tokens=max_tokens)
