@@ -32,8 +32,12 @@ class GenerateArgumentsCommand:
         for i, argument in enumerate(arguments, 1):
             logger.debug(f"Evaluating argument {i}/{len(arguments)}")
             # Evaluate each generated argument
-            evaluation_results = await self.evaluation_service.evaluate_argument(argument)
-            evaluation_result = self.score_aggregator_service.average_scores(evaluation_results)
+            evaluation_results = await self.evaluation_service.evaluate_argument(
+                argument
+            )
+            evaluation_result = self.score_aggregator_service.average_scores(
+                evaluation_results
+            )
 
             # Create a new node with the argument and its evaluation
             # Needs knowledge of existing nodes to get its id.

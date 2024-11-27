@@ -24,11 +24,11 @@ class ChatGPTModel(BaseLLMModel):
             ),
         }
         self.eval_system_message = (
-                f"You are an AI assistant tasked with evaluating the given argument in terms of the criteria given. "
-                f"You must be an unbiased judge to the argument provided. "
-                f"The evaluation should be only a value between 0 to 1. "
-                f"Explicitly print out only the value as a float and nothing else. "
-            )
+            f"You are an AI assistant tasked with evaluating the given argument in terms of the criteria given. "
+            f"You must be an unbiased judge to the argument provided. "
+            f"The evaluation should be only a value between 0 to 1. "
+            f"Explicitly print out only the value as a float and nothing else. "
+        )
 
     @log_execution_time
     async def _evaluate(self, evaluation_type: str, argument: str) -> float:
@@ -50,6 +50,6 @@ class ChatGPTModel(BaseLLMModel):
 
     async def evaluate_factual_accuracy(self, argument: str) -> float:
         return await self._evaluate("factual_accuracy", argument)
-    
+
     async def generate_text(self, system_message: str, user_message: str) -> str:
         return await self.api_client.generate_text(system_message, user_message)

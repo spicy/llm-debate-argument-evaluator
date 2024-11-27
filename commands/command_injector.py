@@ -17,21 +17,33 @@ class CommandInjector:
 
         registry.register(
             "expand_node_command",
-            ExpandNodeCommand(argument_generation_service, evaluation_service, priority_queue_service, score_aggregator_service),
+            ExpandNodeCommand(
+                argument_generation_service,
+                evaluation_service,
+                priority_queue_service,
+                score_aggregator_service,
+            ),
         )
         registry.register(
             "submit_argument_command",
-            SubmitArgumentCommand(evaluation_service, priority_queue_service, score_aggregator_service),
+            SubmitArgumentCommand(
+                evaluation_service, priority_queue_service, score_aggregator_service
+            ),
         )
         registry.register(
             "generate_arguments_command",
             GenerateArgumentsCommand(
-                argument_generation_service, evaluation_service, priority_queue_service, score_aggregator_service
+                argument_generation_service,
+                evaluation_service,
+                priority_queue_service,
+                score_aggregator_service,
             ),
         )
         registry.register(
             "evaluate_arguments_command",
-            EvaluateArgumentsCommand(evaluation_service, score_aggregator_service), # Not too important to have
+            EvaluateArgumentsCommand(
+                evaluation_service, score_aggregator_service
+            ),  # Not too important to have
         )
 
         logger.info("Commands injected successfully")

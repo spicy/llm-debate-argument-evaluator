@@ -1,9 +1,10 @@
 from config import debate_tree_config  # MAX_CHILDREN_PER_NODE, MAX_TREE_DEPTH
-from services.priority_queue_service import PriorityQueueService
-from utils.logger import log_execution_time, logger
 from services.argument_generation_service import ArgumentGenerationService
 from services.evaluation_service import EvaluationService
+from services.priority_queue_service import PriorityQueueService
 from services.score_aggregator_service import ScoreAggregatorService
+from utils.logger import log_execution_time, logger
+
 
 class ExpandNodeCommand:
     def __init__(
@@ -29,28 +30,30 @@ class ExpandNodeCommand:
             return
 
         category = node["category"]
-        support = (
-            f"Based on this argument: {node["argument"]}, make an argument that supports it further."
-        )
-        against = (
-            f"Based on this argument: {node["argument"]}, make an argument that rebuttals this argument."
-        )
+        support = f"Based on this argument: {node["argument"]}, make an argument that supports it further."
+        against = f"Based on this argument: {node["argument"]}, make an argument that rebuttals this argument."
         # Expand the node like it was before in the generation arguments "make 3 more arguments that support this" and "make 3 more arguments that are against this"
-        arguments = await self.argument_generation_service.generate_arguments("none", category, support, against, 1) # For now 1 from 3
+        arguments = await self.argument_generation_service.generate_arguments(
+            "none", category, support, against, 1
+        )  # For now 1 from 3
 
         logger.info(f"Generated {len(arguments)} arguments. Starting evaluation.")
         for i, argument in enumerate(arguments, 1):
             logger.debug(f"Evaluating argument {i}/{len(arguments)}")
             # Evaluate each generated argument
-            evaluation_results = await self.evaluation_service.evaluate_argument(argument)
-            evaluation_result = self.score_aggregator_service.average_scores(evaluation_results)
+            evaluation_results = await self.evaluation_service.evaluate_argument(
+                argument
+            )
+            evaluation_result = self.score_aggregator_service.average_scores(
+                evaluation_results
+            )
 
             new_node = {
                 "id": self.priority_queue_service.get_unique_id(),
                 "argument": argument,
                 "category": category,
                 "evaluation": evaluation_result,
-                "parent": node["id"]
+                "parent": node["id"],
             }
 
             self.priority_queue_service.add_node(new_node)

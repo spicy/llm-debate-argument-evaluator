@@ -22,8 +22,10 @@ class SubmitArgumentCommand:
         # Evaluate the submitted argument
 
         evaluation_results = await self.evaluation_service.evaluate_argument(argument)
-        evaluation_result = self.score_aggregator_service.average_scores(evaluation_results)
-        
+        evaluation_result = self.score_aggregator_service.average_scores(
+            evaluation_results
+        )
+
         logger.debug("Argument evaluation completed")
 
         # Create a new node with the argument and its evaluation

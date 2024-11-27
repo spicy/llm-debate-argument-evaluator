@@ -3,7 +3,7 @@ from typing import Any, Dict
 import aiohttp
 from aiohttp import ClientError
 
-from config.environment import get_env_variable, environment_config
+from config.environment import environment_config, get_env_variable
 from utils.logger import log_execution_time, logger
 
 from .base_api_client import BaseAPIClient
@@ -17,10 +17,14 @@ class ChatGPTAPIClient(BaseAPIClient):
         logger.info("ChatGPTAPIClient initialized")
 
     @log_execution_time
-    async def evaluate(self, system_message: str,  prompt: str, max_tokens: int=20) -> float:
+    async def evaluate(
+        self, system_message: str, prompt: str, max_tokens: int = 20
+    ) -> float:
         logger.info(f"Evaluating prompt: {prompt[:50]}...")
         headers = self._get_headers()
-        data = self._prepare_request_data(prompt, system_message=system_message, max_tokens=max_tokens)
+        data = self._prepare_request_data(
+            prompt, system_message=system_message, max_tokens=max_tokens
+        )
 
         try:
             async with aiohttp.ClientSession() as session:
@@ -35,11 +39,18 @@ class ChatGPTAPIClient(BaseAPIClient):
         except ClientError as e:
             logger.error(f"API request failed: {str(e)}")
             raise Exception(f"API request failed: {str(e)}")
-        
-    async def generate_text(self, system_message: str, prompt: str, max_tokens: int=environment_config.MAX_TOKENS) -> str:
+
+    async def generate_text(
+        self,
+        system_message: str,
+        prompt: str,
+        max_tokens: int = environment_config.MAX_TOKENS,
+    ) -> str:
         logger.info(f"Generating text for prompt: {prompt[:50]}...")
         headers = self._get_headers()
-        data = self._prepare_request_data(prompt, system_message=system_message, max_tokens=max_tokens)
+        data = self._prepare_request_data(
+            prompt, system_message=system_message, max_tokens=max_tokens
+        )
 
         print("Generating argument from CHATGPT API")
         try:
@@ -55,14 +66,16 @@ class ChatGPTAPIClient(BaseAPIClient):
         except ClientError as e:
             logger.error(f"API request failed: {str(e)}")
             raise Exception(f"API request failed: {str(e)}")
-        
+
     def _get_headers(self) -> Dict[str, str]:
         return {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
 
-    def _prepare_request_data(self, prompt: str, system_message: str = None, max_tokens: int = 0) -> Dict[str, Any]:
+    def _prepare_request_data(
+        self, prompt: str, system_message: str = None, max_tokens: int = 0
+    ) -> Dict[str, Any]:
         if system_message:
             return {
                 "model": self.model,
@@ -72,10 +85,10 @@ class ChatGPTAPIClient(BaseAPIClient):
                 ],
                 "max_tokens": max_tokens,
             }
-        else :
+        else:
             return {
                 "model": self.model,
-                "messages": [{"role": "user", "content": prompt}]
+                "messages": [{"role": "user", "content": prompt}],
             }
 
     async def _check_response(self, response: aiohttp.ClientResponse) -> None:
