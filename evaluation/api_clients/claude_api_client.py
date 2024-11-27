@@ -17,10 +17,10 @@ class ClaudeAPIClient(BaseAPIClient):
         logger.info("ClaudeAPIClient initialized")
 
     @log_execution_time
-    async def evaluate(self, prompt: str) -> float:
+    async def evaluate(self, system_message: str, prompt: str, max_tokens: int = 20) -> float:
         logger.info(f"Evaluating prompt: {prompt[:50]}...")
         headers = self._get_headers()
-        data = self._prepare_request_data(prompt)
+        data = self._prepare_request_data(prompt, system_message=system_message, max_tokens=max_tokens)
 
         try:
             async with aiohttp.ClientSession() as session:
@@ -42,11 +42,14 @@ class ClaudeAPIClient(BaseAPIClient):
             "Content-Type": "application/json",
         }
 
-    def _prepare_request_data(self, prompt: str) -> Dict[str, Any]:
+    def _prepare_request_data(self, prompt: str, system_message: str = None, max_tokens: int = 0) -> Dict[str, Any]:
         return {
             "model": self.model,
-            "prompt": prompt,
-            "max_tokens_to_sample": 100,
+            "messages": [
+                {"role": "assistant", "content": system_message},
+                {"role": "user", "content": prompt},
+            ],
+            "max_tokens": max_tokens,
             "temperature": 0.7,
         }
 
