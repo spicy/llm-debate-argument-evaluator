@@ -25,7 +25,7 @@ class GenerateArgumentsCommand:
         )
         # Generate arguments
         arguments = await self.argument_generation_service.generate_arguments(
-            topic, subcategory, support, against, 1 #Changed from 3 to 1
+            topic, subcategory, support, against, 1  # Changed from 3 to 1
         )
 
         logger.info(f"Generated {len(arguments)} arguments. Starting evaluation.")
@@ -38,11 +38,11 @@ class GenerateArgumentsCommand:
             # Create a new node with the argument and its evaluation
             # Needs knowledge of existing nodes to get its id.
             new_node = {
-                "id": self.priority_queue_service.get_unique_id(), # Needed for priority queue 
+                "id": self.priority_queue_service.get_unique_id(),  # Needed for priority queue
                 "argument": argument,
                 "category": subcategory,
                 "evaluation": evaluation_result,
-                "parent": -1 # if its the root
+                "parent": -1,  # if its the root
             }
 
             # Add the new node to the priority queue

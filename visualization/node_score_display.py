@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
 from utils.logger import logger
-
 from visualization.observer import DebateTreeSubject, Observer
 
 
