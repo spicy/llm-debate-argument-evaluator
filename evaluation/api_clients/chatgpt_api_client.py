@@ -17,10 +17,10 @@ class ChatGPTAPIClient(BaseAPIClient):
         logger.info("ChatGPTAPIClient initialized")
 
     @log_execution_time
-    async def evaluate(self, prompt: str) -> float:
+    async def evaluate(self, system_message: str,  prompt: str, max_tokens: int=20) -> float:
         logger.info(f"Evaluating prompt: {prompt[:50]}...")
         headers = self._get_headers()
-        data = self._prepare_request_data(prompt)
+        data = self._prepare_request_data(prompt, system_message=system_message, max_tokens=max_tokens)
 
         try:
             async with aiohttp.ClientSession() as session:
@@ -75,7 +75,7 @@ class ChatGPTAPIClient(BaseAPIClient):
         else :
             return {
                 "model": self.model,
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": [{"role": "user", "content": prompt}]
             }
 
     async def _check_response(self, response: aiohttp.ClientResponse) -> None:
