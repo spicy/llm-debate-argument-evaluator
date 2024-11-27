@@ -15,6 +15,7 @@ class EvaluationService:
         evaluations = {}
 
         for model_name, model in models.items():
+            if model_name == "ChatGPT": continue
             logger.debug(f"Evaluating with model: {model_name}")
             coherence = await model.evaluate_coherence(argument)
             persuasion = await model.evaluate_persuasion(argument)
