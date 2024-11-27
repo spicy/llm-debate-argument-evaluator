@@ -9,47 +9,16 @@ from config.environment import environment_config
 
 class ArgumentGenerationService:
     def __init__(self, api_client: BaseAPIClient):
-        self.prompts = {
-            "abortion": {
-                "Women's Rights": {
-                    "supporting": [
-                        "How does access to abortion support women's bodily autonomy?",
-                        "What are the positive socioeconomic implications of abortion access for women?",
-                    ],
-                    "against": [
-                        "How might unrestricted abortion access negatively impact women's mental health?",
-                        "What are potential risks of using abortion as a primary form of birth control?",
-                    ],
-                },
-                "Fetal Rights": {
-                    "supporting": [
-                        "At what stage of development should a fetus be granted legal rights?",
-                        "How can we balance fetal rights with maternal rights in a fair manner?",
-                    ],
-                    "against": [
-                        "Why should a fetus be considered a person from the moment of conception?",
-                        "How does granting full rights to a fetus impact the rights of the mother?",
-                    ],
-                },
-            }
-            # Add more topics and subcategories as needed
-        }
         self.api_client = api_client
         logger.info("ArgumentGenerationService initialized")
 
     @log_execution_time
     async def generate_arguments(
-        self, topic: str, subcategory: str, num_arguments_per_side: int = 3
+        self, topic: str, subcategory: str, support: str, against: str, num_arguments_per_side: int = 3
     ) -> Dict[str, List[str]]:
         logger.info(
             f"Generating {num_arguments_per_side * 2} arguments for {topic} - {subcategory}"
         )
-        if topic not in self.prompts or subcategory not in self.prompts[topic]:
-            logger.error(f"Invalid topic or subcategory: {topic}, {subcategory}")
-            raise ValueError(f"Invalid topic or subcategory: {topic}, {subcategory}")
-
-        prompts_supporting = self.prompts[topic][subcategory]["supporting"]
-        prompts_against = self.prompts[topic][subcategory]["against"]
 
         async def generate_single_argument(prompt: str, stance: str) -> str:
             system_message = (
@@ -65,11 +34,11 @@ class ArgumentGenerationService:
 
         # Generate arguments asynchronously
         tasks_supporting = [
-            generate_single_argument(random.choice(prompts_supporting), "supporting")
+            generate_single_argument(support, "supporting")
             for _ in range(num_arguments_per_side)
         ]
         tasks_against = [
-            generate_single_argument(random.choice(prompts_against), "against")
+            generate_single_argument(against, "against")
             for _ in range(num_arguments_per_side)
         ]
 
@@ -79,10 +48,10 @@ class ArgumentGenerationService:
         for i, argument in enumerate(arguments_supporting + arguments_against):
             stance = "supporting" if i < num_arguments_per_side else "against"
             logger.debug(
-                f"Generated {stance} argument {i % num_arguments_per_side + 1}: {argument}..."
+                f"Generated {stance} argument {i % num_arguments_per_side + 1}: {argument}"
             )
 
         logger.info(
             f"Generated {len(arguments_supporting)} supporting arguments and {len(arguments_against)} arguments against"
         )
-        return {"supporting": arguments_supporting, "against": arguments_against}
+        return arguments_supporting + arguments_against

@@ -4,9 +4,10 @@ from utils.logger import log_execution_time, logger
 
 
 class Controller:
-    def __init__(self, injector):
+    def __init__(self, injector, quit_event):
         self.injector = injector
         self.user_interactions = UserInteractions(self)
+        self.quit_event = quit_event
 
     @log_execution_time
     async def start(self):
@@ -25,12 +26,12 @@ class Controller:
         await submit_argument_command.execute(argument, category)
 
     @log_execution_time
-    async def generate_arguments(self, topic, subcategory):
+    async def generate_arguments(self, topic, subcategory, support, against):
         logger.info(
-            f"Generating arguments for topic: {topic}, subcategory: {subcategory}"
+            f"Generating arguments for topic: {topic}, subcategory: {subcategory} supporting_prompt: {support}, against_prompt: {against}"
         )
         generate_arguments_command = self.injector.get("generate_arguments_command")
-        await generate_arguments_command.execute(topic, subcategory)
+        await generate_arguments_command.execute(topic, subcategory, support, against)
 
     @log_execution_time
     async def evaluate_arguments(self, arguments):

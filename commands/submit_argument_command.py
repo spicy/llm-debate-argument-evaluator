@@ -17,15 +17,17 @@ class SubmitArgumentCommand:
         logger.debug(f"Submitting and evaluating argument in category: {category}")
 
         # Evaluate the submitted argument
-        evaluation_result = await self.evaluation_service.evaluate_argument(argument)
+        # evaluation_result = await self.evaluation_service.evaluate_argument(argument)
+        evaluation_result = 0.8
         logger.debug("Argument evaluation completed")
 
         # Create a new node with the argument and its evaluation
         new_node = {
-            "id": 1,  # Needed for priority queue (Should be unique, but for testing is 1)
+            "id": self.priority_queue_service.get_unique_id(),  # Needed for priority queue (Should be unique, but for testing is 1)
             "argument": argument,
             "category": category,
             "evaluation": evaluation_result,
+            "parent": -1
         }
 
         # Add the new node to the priority queue
