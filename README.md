@@ -90,9 +90,14 @@ Setup env variables for CHATGPT_API_KEY and CHATGPT_API_ENDPOINT
 CHATGPT_API_KEY = {secret}
 CHATGPT_API_ENDPOINT = https://api.openai.com/v1/chat/completions
 DEBUG_MODE = 1 for true (for debugging)
-MAX_TOKENS = 10 (Just seeing it functions)
+MAX_TOKENS = 10 (Just seeing it functions)\
+
+CLAUDE_API_KEY = {secret}
+CLAUDE_API_ENDPOINT = https = https://api.anthropic.com/v1/messages
 
 
 # EXAMPLE OUTPUT
-* Generated supporting argument 1: Access to abortion is essential for supporting women's bodily autonomy as it allows individuals to make decisions about their own bodies, health, and lives. Denying access to safe and legal abortion restricts women's ability to control their reproductive choices, infringing upon their fundamental right to autonomy and self-determination. By ensuring access to abortion, women can assert their bodily autonomy, have the freedom to make decisions regarding their own bodies, and take charge of their reproductive health without external interference.
-* Generated against argument 1: Unrestricted abortion access could potentially have negative implications for women's mental health by minimizing the decision-making process and overlooking the potential emotional consequences associated with terminating a pregnancy. Without ensuring thorough counseling and support services, women may experience feelings of guilt, regret, or psychological distress post-abortion. This lack of adequate mental health care support could lead to long-term emotional challenges and contribute to an increase in mental health issues among women who undergo abortions.
+* Generated supporting argument 1: 
+Access to abortion is essential for supporting women's bodily autonomy as it allows individuals to make decisions about their own bodies, health, and lives. Denying access to safe and legal abortion restricts women's ability to control their reproductive choices, infringing upon their fundamental right to autonomy and self-determination. By ensuring access to abortion, women can assert their bodily autonomy, have the freedom to make decisions regarding their own bodies, and take charge of their reproductive health without external interference.
+* Generated against argument 1: 
+Unrestricted abortion access could potentially have negative implications for women's mental health by minimizing the decision-making process and overlooking the potential emotional consequences associated with terminating a pregnancy. Without ensuring thorough counseling and support services, women may experience feelings of guilt, regret, or psychological distress post-abortion. This lack of adequate mental health care support could lead to long-term emotional challenges and contribute to an increase in mental health issues among women who undergo abortions.

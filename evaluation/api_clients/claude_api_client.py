@@ -13,14 +13,18 @@ class ClaudeAPIClient(BaseAPIClient):
     def __init__(self):
         self.api_key = get_env_variable("CLAUDE_API_KEY")
         self.api_endpoint = get_env_variable("CLAUDE_API_ENDPOINT")
-        self.model = "claude-v1"
+        self.model = "claude-3-5-sonnet-20241022"
         logger.info("ClaudeAPIClient initialized")
 
     @log_execution_time
-    async def evaluate(self, prompt: str) -> float:
+    async def evaluate(
+        self, system_message: str, prompt: str, max_tokens: int = 20
+    ) -> float:
         logger.info(f"Evaluating prompt: {prompt[:50]}...")
         headers = self._get_headers()
-        data = self._prepare_request_data(prompt)
+        data = self._prepare_request_data(
+            prompt, system_message=system_message, max_tokens=max_tokens
+        )
 
         try:
             async with aiohttp.ClientSession() as session:
@@ -28,6 +32,7 @@ class ClaudeAPIClient(BaseAPIClient):
                     self.api_endpoint, headers=headers, json=data
                 ) as response:
                     await self._check_response(response)
+
                     result = await response.json()
                     score = self._extract_score(result)
                     logger.info(f"Evaluation completed. Score: {score}")
@@ -35,19 +40,26 @@ class ClaudeAPIClient(BaseAPIClient):
         except ClientError as e:
             logger.error(f"API request failed: {str(e)}")
             raise Exception(f"API request failed: {str(e)}")
+        finally:
+            await session.close()
 
     def _get_headers(self) -> Dict[str, str]:
         return {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
+            "x-api-key": f"{self.api_key}",
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
         }
 
-    def _prepare_request_data(self, prompt: str) -> Dict[str, Any]:
+    def _prepare_request_data(
+        self, prompt: str, system_message: str = None, max_tokens: int = 0
+    ) -> Dict[str, Any]:
         return {
             "model": self.model,
-            "prompt": prompt,
-            "max_tokens_to_sample": 100,
-            "temperature": 0.7,
+            "system": system_message,
+            "messages": [
+                {"role": "user", "content": prompt},
+            ],
+            "max_tokens": max_tokens,
         }
 
     async def _check_response(self, response: aiohttp.ClientResponse) -> None:
@@ -62,7 +74,7 @@ class ClaudeAPIClient(BaseAPIClient):
 
     def _extract_score(self, result: Dict[str, Any]) -> float:
         try:
-            content = result["completion"]
+            content = result["content"][0]["text"]
             # Assuming the content is a string representation of a float
             return float(content)
         except (KeyError, ValueError) as e:

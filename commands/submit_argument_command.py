@@ -1,5 +1,6 @@
 from services.evaluation_service import EvaluationService
 from services.priority_queue_service import PriorityQueueService
+from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import log_execution_time, logger
 
 
@@ -8,17 +9,23 @@ class SubmitArgumentCommand:
         self,
         evaluation_service: EvaluationService,
         priority_queue_service: PriorityQueueService,
+        score_aggregator_service: ScoreAggregatorService,
     ):
         self.evaluation_service = evaluation_service
         self.priority_queue_service = priority_queue_service
+        self.score_aggregator_service = score_aggregator_service
 
     @log_execution_time
     async def execute(self, argument: str, category: str):
         logger.debug(f"Submitting and evaluating argument in category: {category}")
 
         # Evaluate the submitted argument
-        # evaluation_result = await self.evaluation_service.evaluate_argument(argument)
-        evaluation_result = 0.8
+
+        evaluation_results = await self.evaluation_service.evaluate_argument(argument)
+        evaluation_result = self.score_aggregator_service.average_scores(
+            evaluation_results
+        )
+
         logger.debug("Argument evaluation completed")
 
         # Create a new node with the argument and its evaluation

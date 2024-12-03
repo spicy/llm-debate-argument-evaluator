@@ -16,10 +16,10 @@ class EvaluationInjector:
 
         ModelInjector.inject_models(model_factory)
 
-        # evaluation_service = EvaluationService(model_factory)
-        # score_aggregator_service = ScoreAggregatorService()
-        #
-        # registry.register("evaluation_service", evaluation_service)
-        # registry.register("score_aggregator_service", score_aggregator_service)
+        evaluation_service = EvaluationService(model_factory)
+        score_aggregator_service = ScoreAggregatorService()
+
+        registry.register("evaluation_service", evaluation_service)
+        registry.register("score_aggregator_service", score_aggregator_service)
 
         logger.info("Evaluation services injected successfully")
