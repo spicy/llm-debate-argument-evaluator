@@ -31,7 +31,6 @@ class TraverseDebateCommand:
         try:
             logger.info(f"Starting debate traversal from node: {root_node_id}")
 
-            # Start traversal with existing root node
             async for node in self.traversal_logic.traverse(
                 root_node_id,
                 self.priority_queue_service.get_node,
@@ -40,6 +39,9 @@ class TraverseDebateCommand:
                 max_depth,
             ):
                 logger.debug(f"Traversed node: {node['id']}")
+
+            # Print the optimal path after traversal
+            self.traversal_logic.print_optimal_path()
 
         except Exception as e:
             logger.error(f"Error during debate traversal: {str(e)}")

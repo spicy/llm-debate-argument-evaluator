@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from config.debate_traversal_config import debate_traversal_config
 from config.debate_tree_config import debate_tree_config
@@ -10,6 +10,8 @@ class TraversalLogic:
     def __init__(self, priority_queue_service: PriorityQueueService):
         self.priority_queue_service = priority_queue_service
         self.visited_nodes: Dict[str, Any] = {}
+        self.optimal_path: List[Dict[str, Any]] = []
+        self.best_score = 0.0
         logger.info("TraversalLogic initialized")
 
     async def traverse(
@@ -75,6 +77,7 @@ class TraversalLogic:
                                 )
 
                     yield current_node
+                    self._track_optimal_path(current_node)
 
                 except KeyError as e:
                     logger.error(f"Error during node processing: {str(e)}")
@@ -98,3 +101,33 @@ class TraversalLogic:
         elif score <= debate_traversal_config.LOW_PRIORITY_THRESHOLD:
             return "LOW"
         return "MEDIUM"
+
+    def _track_optimal_path(self, current_node: Dict[str, Any]) -> None:
+        """Track the optimal path based on evaluation scores"""
+        current_score = float(current_node.get("evaluation", 0))
+
+        if current_score > self.best_score:
+            self.best_score = current_score
+            # Find path from current node to root
+            path = []
+            node = current_node
+            while node:
+                path.append(node)
+                parent_id = node.get("parent")
+                if parent_id == -1:
+                    break
+                node = self.priority_queue_service.get_node(str(parent_id))
+            self.optimal_path = list(reversed(path))
+
+    def print_optimal_path(self) -> None:
+        """Print the optimal path through the debate tree using ASCII characters"""
+        if not self.optimal_path:
+            logger.info("No optimal path found")
+            return
+
+        logger.info("\nOptimal debate path (best scoring route):")
+        for i, node in enumerate(self.optimal_path):
+            indent = "  " * i
+            score = node.get("evaluation", 0)
+            logger.info(f"{indent}+- Node {node['id']} (Score: {score:.2f})")
+            logger.info(f"{indent}|  Argument: {node['argument'][:100]}...")
