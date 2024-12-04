@@ -11,7 +11,7 @@ class UserInteractions:
         logger.info("Starting main interaction loop")
         while not asyncio.Event.is_set(self.controller.quit_event):
             command = await asyncio.to_thread(
-                input, "Enter a command (expand/submit/generate/evaluate/quit): "
+                input, "Enter a command (expand/submit/generate/evaluate/show/quit): "
             )
             command = command.lower()
 
@@ -19,7 +19,7 @@ class UserInteractions:
                 self.controller.quit_event.set()
                 break
             elif command == "expand":
-                node_id = await asyncio.to_thread(input, "Enter node ID to expand: ")
+                node_id = await asyncio.to_thread(input, "Enter node ID to expand or \"top\" to expand top node: ")
                 logger.info(f"User requested to expand node: {node_id}")
                 await self.controller.expand_node(node_id)
             elif command == "submit":
@@ -51,6 +51,8 @@ class UserInteractions:
                 arguments = arguments.split(",")
                 logger.info(f"User requested to evaluate {len(arguments)} arguments")
                 await self.controller.evaluate_arguments(arguments)
+            elif command == "list":
+                logger.info(F"Showing the nodescores dipslay")
             else:
                 logger.warning(f"User entered invalid command: {command}")
                 logger.info("Invalid command. Please try again.")
