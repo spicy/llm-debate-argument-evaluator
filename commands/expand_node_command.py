@@ -23,7 +23,10 @@ class ExpandNodeCommand:
     async def execute(self, node_id: str):
         logger.debug(f"Attempting to expand node with ID {node_id}")
         # Retrieve the node from the priority queue
-        node = self.priority_queue_service.get_node(int(node_id))
+        if node_id == "top": 
+            node = self.priority_queue_service.get_top_node()[2]
+        else:
+            node = self.priority_queue_service.get_node(int(node_id))
         logger.debug(f"Node: {node}")
         if not node:
             logger.warning(f"Node with ID {node_id} not found.")

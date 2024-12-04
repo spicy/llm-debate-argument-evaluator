@@ -3,6 +3,7 @@ from services.priority_queue_service import PriorityQueueService
 from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import log_execution_time, logger
 
+import random
 
 class SubmitArgumentCommand:
     def __init__(
@@ -21,10 +22,11 @@ class SubmitArgumentCommand:
 
         # Evaluate the submitted argument
 
-        evaluation_results = await self.evaluation_service.evaluate_argument(argument)
-        evaluation_result = self.score_aggregator_service.average_scores(
-            evaluation_results
-        )
+        # evaluation_results = await self.evaluation_service.evaluate_argument(argument)
+        # evaluation_result = self.score_aggregator_service.average_scores(
+        #     evaluation_results
+        # )
+        evaluation_result = random.randrange(0, 100) * 0.01
 
         logger.debug("Argument evaluation completed")
 
