@@ -23,7 +23,7 @@ class ExpandNodeCommand:
     @log_execution_time
     async def execute(self, node_id: str):
         logger.debug(f"Attempting to expand node with ID {node_id}")
-        node = self.priority_queue_service.get_node(int(node_id))
+        node = self.priority_queue_service.get_node(str(node_id))
         if not node:
             logger.warning(f"Node with ID {node_id} not found.")
             return
