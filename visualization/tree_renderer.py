@@ -15,10 +15,10 @@ from visualization.observer import Observer
 class NodeVisualProperties:
     """Visual properties for rendering nodes"""
 
-    radius: int = 30
-    padding: int = 100
-    font_size: int = 32
-    small_font_size: int = 24
+    radius: int = 20  # Reduced from 30 to show more nodes
+    padding: int = 50  # Reduced from 100 to use more screen space
+    font_size: int = 24  # Reduced from 32 for smaller text
+    small_font_size: int = 16  # Reduced from 24 for smaller text
 
 
 @dataclass
@@ -27,7 +27,7 @@ class CameraSettings:
 
     offset_x: float
     offset_y: float
-    zoom: float = 1.0
+    zoom: float = 0.7  # Reduced from 1.0 for initial zoomed out view
 
 
 class TreeRenderer(Observer):
@@ -107,8 +107,10 @@ class TreeRenderer(Observer):
         if not self.graph.nodes():
             return
 
-        # Calculate initial positions
-        self.positions = nx.spring_layout(self.graph, k=2, iterations=50)
+        # Calculate initial positions with more spread
+        self.positions = nx.spring_layout(
+            self.graph, k=3, iterations=50
+        )  # Increased k from 2 to 3
 
         # Scale positions to fit screen
         self._scale_positions_to_screen()
@@ -198,7 +200,10 @@ class TreeRenderer(Observer):
                 category,
                 self.small_font,
                 (0, 0, 0),
-                (screen_pos[0], screen_pos[1] - self.visual_props.radius - 15),
+                (
+                    screen_pos[0],
+                    screen_pos[1] - self.visual_props.radius - 10,
+                ),  # Reduced spacing from 15 to 10
             )
 
         self._draw_text(str(node_id), self.small_font, (0, 0, 0), screen_pos)
