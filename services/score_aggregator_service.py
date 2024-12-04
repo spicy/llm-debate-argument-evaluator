@@ -1,4 +1,5 @@
 from utils.logger import log_execution_time, logger
+from config.
 
 
 class ScoreAggregatorService:
@@ -33,6 +34,7 @@ class ScoreAggregatorService:
             "cultural_acceptance": 0.0,
             "factual_accuracy": 0.0,
         }
+
         for scores in evaluation_results.values():
             for criterion, score in scores.items():
                 total_scores[criterion] += score
@@ -41,10 +43,14 @@ class ScoreAggregatorService:
             total_scores[key] /= 2
 
         logger.debug(f"Average scores of both models: {total_scores}")
+        
+        # Influence of each critera has an influence on overall score (cultural 20%, factual 50%, acceptance 20%, persuain 30%)
+        overall_score = 0.0
 
-        final_score = 0.0
-        for score in total_scores.values():
-            final_score += score
+        overall_score += .20 * total_scores["coherence"]
+        overall_score += .20 * total_scores["cultural_acceptance"]
+    
 
-        logger.debug("Average scores completed")
-        return final_score / 4.0
+        logger.debug(f"Overall score of node {overall_score} completed")
+        
+        return overall_score
