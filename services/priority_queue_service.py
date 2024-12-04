@@ -11,7 +11,7 @@ class PriorityQueueService:
 
     def __init__(self):
         self.queue = []
-        self.entry_finder: Dict[str, Tuple[int, int, Dict[str, Any]]] = {}
+        self.entry_finder = {}
         self.counter = 0
         self.state_saver = StateSaver()
         self.PRIORITY_LEVELS = priority_queue_config.PRIORITY_LEVELS
@@ -19,6 +19,10 @@ class PriorityQueueService:
 
     def add_node(self, node: Dict[str, Any], priority: str = "MEDIUM") -> None:
         """Add a new node or update existing node"""
+        if not isinstance(node, dict):
+            logger.error(f"Invalid node format: {node}")
+            return
+
         node_id = str(node["id"])
         if node_id in self.entry_finder:
             self.remove_node(node_id)
@@ -28,7 +32,12 @@ class PriorityQueueService:
         count = self.counter
         self.counter += 1
 
-        entry = [-priority_value, count, node]  # Negative for max-heap behavior
+        # Store the complete node object
+        entry = [
+            -priority_value,
+            count,
+            node.copy(),
+        ]  # Make a copy to prevent reference issues
         self.entry_finder[node_id] = entry
         heapq.heappush(self.queue, entry)
         logger.debug(f"Added/Updated node {node_id} with priority {priority}")
@@ -47,24 +56,35 @@ class PriorityQueueService:
             priority, count, node = heapq.heappop(self.queue)
             if node is not self.REMOVED:
                 node_id = str(node["id"])
-                if node_id in self.entry_finder:
-                    del self.entry_finder[node_id]
-                    logger.debug(f"Popped node {node_id} with priority {-priority}")
-                    return node
+                # Don't remove from entry_finder to preserve node data
+                logger.debug(f"Popped node {node_id} with priority {-priority}")
+                return node.copy()  # Return a copy to prevent modifications
         raise KeyError("pop from an empty priority queue")
 
     def get_node(self, node_id: str) -> Optional[Dict[str, Any]]:
         """Get node data from entry_finder"""
         entry = self.entry_finder.get(str(node_id))
-        return entry[2] if entry else None
+        if not entry or not isinstance(entry, (list, tuple)) or len(entry) < 3:
+            logger.warning(f"Node {node_id} not found or invalid entry format")
+            return None
+
+        node = entry[2]
+        if node is self.REMOVED:
+            return None
+
+        # Return a copy of the node to prevent accidental modifications
+        return node.copy() if isinstance(node, dict) else None
 
     def get_children(self, parent_id: str) -> List[Dict[str, Any]]:
         """Get all children of a node"""
         children = []
         for entry in self.entry_finder.values():
+            if not isinstance(entry, (list, tuple)) or len(entry) < 3:
+                continue
             node = entry[2]
-            if node is not self.REMOVED and str(node.get("parent")) == str(parent_id):
-                children.append(node)
+            if isinstance(node, dict) and node is not self.REMOVED:
+                if str(node.get("parent")) == str(parent_id):
+                    children.append(node)
         return children
 
     def get_all_nodes(self) -> Dict[str, Dict[str, Any]]:
@@ -85,14 +105,36 @@ class PriorityQueueService:
         self.counter += 1
         return unique_id
 
-    def _get_priority_value(self, priority: str) -> int:
-        """Convert priority string to numeric value"""
-        priority_map = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
-        return priority_map.get(priority.upper(), 2)  # Default to MEDIUM
+    def _get_priority_value(self, priority: Any) -> int:
+        """Convert priority string or number to numeric value"""
+        if isinstance(priority, (int, float)):
+            return int(priority)
 
-    def update_node(self, node_id, updated_node):
-        """Update a node in the priority queue"""
-        if node_id in self.entry_finder:
-            self.entry_finder[node_id] = updated_node
+        priority_map = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
+        if isinstance(priority, str):
+            return priority_map.get(priority.upper(), 2)  # Default to MEDIUM
+        return 2  # Default to MEDIUM for unknown types
+
+    def update_node(self, node_id: str, node: Dict[str, Any]) -> None:
+        """Update an existing node while preserving its priority"""
+        if not isinstance(node, dict):
+            logger.error(f"Invalid node data format for update: {node}")
+            return
+
+        node_id = str(node_id)
+        existing_entry = self.entry_finder.get(node_id)
+
+        if (
+            existing_entry
+            and isinstance(existing_entry, (list, tuple))
+            and len(existing_entry) >= 3
+        ):
+            priority = -existing_entry[0]  # Get original priority
+            self.remove_node(node_id)
+            self.add_node(node.copy(), priority)  # Make a copy of the node
+            logger.debug(f"Updated node {node_id} with preserved priority {priority}")
         else:
-            raise KeyError(f"Node with ID {node_id} not found in priority queue")
+            logger.warning(f"Attempted to update non-existent node {node_id}")
+            # Use evaluation score as priority if available, otherwise default to MEDIUM
+            priority = node.get("evaluation", "MEDIUM")
+            self.add_node(node.copy(), priority)

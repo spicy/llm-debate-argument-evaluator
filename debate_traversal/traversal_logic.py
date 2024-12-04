@@ -20,38 +20,60 @@ class TraversalLogic:
         evaluate_node_func,
         max_depth: int = debate_tree_config.MAX_TREE_DEPTH,
     ):
+        """Traverse the debate tree starting from root_node_id"""
+        root_node = get_node_func(root_node_id)
+        if not root_node:
+            logger.error(f"Root node {root_node_id} not found")
+            return
+
+        # Initialize root node in priority queue if not visited
+        if str(root_node["id"]) not in self.visited_nodes:
+            evaluation = await evaluate_node_func(root_node_id)
+            priority = self._determine_priority(evaluation)
+            self.priority_queue_service.add_node(root_node, priority)
+            logger.debug(f"Added root node {root_node_id} to priority queue")
+
         while not self.priority_queue_service.is_empty():
-            current_node = self.priority_queue_service.pop_node()
-            current_node_id = current_node["id"]
+            try:
+                current_node = self.priority_queue_service.pop_node()
+                if not current_node:
+                    continue
 
-            if current_node_id in self.visited_nodes:
-                continue
+                current_node_id = str(current_node["id"])
+                if current_node_id in self.visited_nodes:
+                    continue
 
-            if current_node["depth"] >= max_depth:
-                logger.debug(
-                    f"Reached max depth {max_depth} for node {current_node_id}"
-                )
-                continue
+                if current_node["depth"] >= max_depth:
+                    logger.debug(
+                        f"Reached max depth {max_depth} for node {current_node_id}"
+                    )
+                    continue
 
-            self.visited_nodes[current_node_id] = current_node
-            logger.debug(f"Visiting node {current_node_id}")
+                self.visited_nodes[current_node_id] = current_node
+                logger.debug(f"Visiting node {current_node_id}")
 
-            existing_children = self.priority_queue_service.get_children(
-                current_node_id
-            )
-
-            if len(existing_children) < debate_tree_config.MAX_CHILDREN_PER_NODE:
+                # Expand current node
                 try:
                     new_nodes = await expand_node_func(current_node_id)
-                    for new_node in new_nodes:
-                        evaluation = await evaluate_node_func(new_node["id"])
-                        priority = self._determine_priority(evaluation)
-                        new_node["depth"] = current_node["depth"] + 1
-                        self.priority_queue_service.add_node(new_node, priority)
+                    if new_nodes:
+                        for new_node in new_nodes:
+                            new_node_id = str(new_node["id"])
+                            if new_node_id not in self.visited_nodes:
+                                evaluation = await evaluate_node_func(new_node_id)
+                                priority = self._determine_priority(evaluation)
+                                new_node["depth"] = current_node["depth"] + 1
+                                self.priority_queue_service.add_node(new_node, priority)
+                                logger.debug(
+                                    f"Added new node {new_node_id} with priority {priority}"
+                                )
                 except Exception as e:
                     logger.error(f"Error expanding node {current_node_id}: {str(e)}")
 
-            yield current_node
+                yield current_node
+
+            except Exception as e:
+                logger.error(f"Error during traversal: {str(e)}")
+                continue
 
     def _determine_priority(self, evaluation: dict) -> str:
         """
