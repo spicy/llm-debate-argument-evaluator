@@ -1,4 +1,3 @@
-import re
 from typing import Any, Dict
 
 import aiohttp
@@ -73,19 +72,11 @@ class ClaudeAPIClient(BaseAPIClient):
                 f"API request failed with status {response.status}: {error_detail}"
             )
 
-    def _extract_score(self, response: dict) -> float:
+    def _extract_score(self, result: Dict[str, Any]) -> float:
         try:
-            content = (
-                response.get("choices", [{}])[0].get("message", {}).get("content", "")
-            )
-
-            # Look for "SCORE: X.XX" pattern
-            score_match = re.search(r"SCORE:\s*(\d+\.?\d*)", content, re.IGNORECASE)
-            if score_match:
-                return float(score_match.group(1))
-            raise ValueError(
-                f"No properly formatted score found in response: {content}"
-            )
-        except Exception as e:
+            content = result["content"][0]["text"]
+            # Assuming the content is a string representation of a float
+            return float(content)
+        except (KeyError, ValueError) as e:
             logger.error(f"Failed to extract score from API response: {str(e)}")
             raise Exception(f"Failed to extract score from API response: {str(e)}")

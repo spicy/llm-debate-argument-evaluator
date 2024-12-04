@@ -15,7 +15,7 @@ class NodeScoreDisplay(Observer):
     def display_scores(self, debate_tree: Dict[str, Any]):
         logger.info("Displaying node scores")
         for node_id, node_data in debate_tree.items():
-            score = node_data.get("evaluation", 0)
+            score = node_data[2].get("evaluation", 0)
             color = self._score_to_color(score)
             logger.info(f"Node {node_id}: Score = {score:.2f}, Color = {color}")
 

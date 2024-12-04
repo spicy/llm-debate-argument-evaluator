@@ -7,7 +7,6 @@ from .logger_config import logger_config
 from .memoization_config import memoization_config
 from .priority_queue_config import priority_queue_config
 from .visualization_config import visualization_config
-from .score_aggregator_config import score_aggregator_config
 
 __all__ = [
     "api_config",
@@ -20,5 +19,4 @@ __all__ = [
     "logger_config",
     "environment_config",
     "get_env_variable",
-    "score_aggregator_config"
 ]

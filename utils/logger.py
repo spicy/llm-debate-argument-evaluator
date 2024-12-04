@@ -4,51 +4,48 @@ import time
 from functools import wraps
 from typing import Any, Callable
 
-import colorlog
-
 from config.environment import environment_config
 from config.logger_config import logger_config
 
 
 def setup_logger(config=logger_config) -> logging.Logger:
     """
-    Sets up and configures the logger with colored output for console
-    and regular output for file logging.
+    Sets up and configures the logger.
     """
     logger = logging.getLogger(config.LOGGER_NAME)
     if environment_config.DEBUG_MODE:
+        # DEBUG MODE will print hidden information
         logger.setLevel(logging.DEBUG)
     else:
+        # Normal run mode
         logger.setLevel(logging.INFO)
 
-    # Clear any existing handlers
-    logger.handlers = []
+    formatter = logging.Formatter(config.LOG_FORMAT)
 
-    # Console Handler with colors
-    console_handler = colorlog.StreamHandler()
-    color_formatter = colorlog.ColoredFormatter(
-        config.COLOR_LOG_FORMAT, log_colors=config.COLOR_SCHEME, reset=True, style="%"
-    )
-    console_handler.setFormatter(color_formatter)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
-    # File Handler (without colors)
     os.makedirs(config.LOGS_FOLDER, exist_ok=True)
-    file_formatter = logging.Formatter(config.LOG_FORMAT)
-
     file_handler = logging.FileHandler(
         os.path.join(config.LOGS_FOLDER, config.LOG_FILE_NAME)
     )
-    file_handler.setFormatter(file_formatter)
+
+    file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-    # Current session log
-    last_path = os.path.join(config.LOGS_FOLDER, config.LAST_FILE_NAME)
-    if os.path.exists(last_path):
+    # Current session log that only keeps track of last session
+    last_path = "/".join([config.LOGS_FOLDER, config.LAST_FILE_NAME])
+
+    entries = os.listdir(config.LOGS_FOLDER)
+    if config.LAST_FILE_NAME in entries:
         os.remove(last_path)
 
-    session_handler = logging.FileHandler(last_path)
-    session_handler.setFormatter(file_formatter)
+    session_handler = logging.FileHandler(
+        os.path.join(config.LOGS_FOLDER, config.LAST_FILE_NAME)
+    )
+
+    session_handler.setFormatter(formatter)
     logger.addHandler(session_handler)
 
     return logger

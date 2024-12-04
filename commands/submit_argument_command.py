@@ -30,11 +30,9 @@ class SubmitArgumentCommand:
 
         # Create a new node with the argument and its evaluation
         new_node = {
-            "id": self.priority_queue_service.get_unique_id(),
+            "id": self.priority_queue_service.get_unique_id(),  # Needed for priority queue (Should be unique, but for testing is 1)
             "argument": argument,
             "category": category,
-            "topic": "User Submitted",
-            "subtopic": category,
             "evaluation": evaluation_result,
             "parent": -1,
         }
