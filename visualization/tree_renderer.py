@@ -84,10 +84,8 @@ class TreeRenderer(Observer):
         """Build the NetworkX graph from the debate tree"""
         self.graph.clear()
         for node_id, node_data in debate_tree.items():
-            node_dict = node_data[
-                2
-            ]  # Assuming structure: [priority, counter, node_dict]
-            self._add_node_to_graph(node_id, node_dict)
+            # Node data is now the complete node dictionary
+            self._add_node_to_graph(node_id, node_data)
 
     def _add_node_to_graph(self, node_id: str, node_dict: Dict[str, Any]) -> None:
         """Add a node and its edges to the graph"""
