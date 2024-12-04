@@ -6,6 +6,7 @@ from pygame.sprite import Sprite
 
 from utils.logger import logger
 from visualization.observer import DebateTreeSubject, Observer
+from services.priority_queue_service import PriorityQueueService
 
 # Font used for all text
 pg.init()
@@ -36,9 +37,10 @@ class Node(Sprite):
 
 
 class TreeRenderer(Observer):
-    def __init__(self, debate_tree_subject: DebateTreeSubject):
+    def __init__(self, debate_tree_subject: DebateTreeSubject, priority_queue_service: PriorityQueueService):
         self.debate_tree_subject = debate_tree_subject
         self.debate_tree_subject.attach(self)
+        self.priority_queue_service = priority_queue_service
 
         # Points and nodes
         self.nodes = []
@@ -60,6 +62,10 @@ class TreeRenderer(Observer):
 
     async def start(self, quit_event):
         await self.main_loop(quit_event)
+
+    def get_top_node(self):
+        # returns top node in the three and makes it the top
+        pass
 
     def update(self, subject):
         # Update debate_tree based on new information
