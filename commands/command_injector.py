@@ -1,7 +1,9 @@
 from commands.evaluate_arguments_command import EvaluateArgumentsCommand
 from commands.expand_node_command import ExpandNodeCommand
 from commands.generate_arguments_command import GenerateArgumentsCommand
+from commands.load_file_command import LoadFileCommand
 from commands.submit_argument_command import SubmitArgumentCommand
+from commands.traverse_debate_command import TraverseDebateCommand
 from utils.logger import logger
 
 
@@ -18,22 +20,51 @@ class CommandInjector:
         registry.register(
             "expand_node_command",
             ExpandNodeCommand(
-                argument_generation_service, evaluation_service, priority_queue_service
+                argument_generation_service,
+                evaluation_service,
+                priority_queue_service,
+                score_aggregator_service,
             ),
         )
         registry.register(
             "submit_argument_command",
-            SubmitArgumentCommand(evaluation_service, priority_queue_service),
+            SubmitArgumentCommand(
+                evaluation_service, priority_queue_service, score_aggregator_service
+            ),
         )
         registry.register(
             "generate_arguments_command",
             GenerateArgumentsCommand(
-                argument_generation_service, evaluation_service, priority_queue_service
+                argument_generation_service,
+                evaluation_service,
+                priority_queue_service,
+                score_aggregator_service,
             ),
         )
         registry.register(
             "evaluate_arguments_command",
-            EvaluateArgumentsCommand(evaluation_service, score_aggregator_service),
+            EvaluateArgumentsCommand(
+                evaluation_service, score_aggregator_service
+            ),  # Not too important to have
+        )
+
+        registry.register(
+            "load_file_command",
+            LoadFileCommand(
+                evaluation_service,
+                priority_queue_service,
+                score_aggregator_service,
+            ),
+        )
+
+        registry.register(
+            "traverse_debate_command",
+            TraverseDebateCommand(
+                registry.get("traversal_logic"),
+                priority_queue_service,
+                registry.get("expand_node_command"),
+                registry.get("evaluate_arguments_command"),
+            ),
         )
 
         logger.info("Commands injected successfully")

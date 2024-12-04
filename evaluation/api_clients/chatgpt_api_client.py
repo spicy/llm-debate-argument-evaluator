@@ -1,9 +1,10 @@
+import re
 from typing import Any, Dict
 
 import aiohttp
 from aiohttp import ClientError
 
-from config.environment import get_env_variable
+from config.environment import environment_config, get_env_variable
 from utils.logger import log_execution_time, logger
 
 from .base_api_client import BaseAPIClient
@@ -17,10 +18,14 @@ class ChatGPTAPIClient(BaseAPIClient):
         logger.info("ChatGPTAPIClient initialized")
 
     @log_execution_time
-    async def evaluate(self, prompt: str) -> float:
+    async def evaluate(
+        self, system_message: str, prompt: str, max_tokens: int = 20
+    ) -> float:
         logger.info(f"Evaluating prompt: {prompt[:50]}...")
         headers = self._get_headers()
-        data = self._prepare_request_data(prompt)
+        data = self._prepare_request_data(
+            prompt, system_message=system_message, max_tokens=max_tokens
+        )
 
         try:
             async with aiohttp.ClientSession() as session:
@@ -37,7 +42,10 @@ class ChatGPTAPIClient(BaseAPIClient):
             raise Exception(f"API request failed: {str(e)}")
 
     async def generate_text(
-        self, system_message: str, prompt: str, max_tokens: int
+        self,
+        system_message: str,
+        prompt: str,
+        max_tokens: int = environment_config.MAX_TOKENS,
     ) -> str:
         logger.info(f"Generating text for prompt: {prompt[:50]}...")
         headers = self._get_headers()
@@ -94,11 +102,19 @@ class ChatGPTAPIClient(BaseAPIClient):
                 f"API request failed with status {response.status}: {error_detail}"
             )
 
-    def _extract_score(self, result: Dict[str, Any]) -> float:
+    def _extract_score(self, response: dict) -> float:
         try:
-            content = result["choices"][0]["message"]["content"]
-            # Assuming the content is a string representation of a float
-            return float(content)
-        except (KeyError, ValueError, IndexError) as e:
+            content = (
+                response.get("choices", [{}])[0].get("message", {}).get("content", "")
+            )
+
+            # Look for "SCORE: X.XX" pattern
+            score_match = re.search(r"SCORE:\s*(\d+\.?\d*)", content, re.IGNORECASE)
+            if score_match:
+                return float(score_match.group(1))
+            raise ValueError(
+                f"No properly formatted score found in response: {content}"
+            )
+        except Exception as e:
             logger.error(f"Failed to extract score from API response: {str(e)}")
             raise Exception(f"Failed to extract score from API response: {str(e)}")

@@ -1,9 +1,12 @@
+import logging
 import os
 from typing import Union
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 def get_env_variable(
@@ -27,10 +30,27 @@ def get_env_variable(
 
 
 class EnvironmentConfig:
-    API_KEY = get_env_variable("API_KEY", "")
-    DEBUG_MODE = get_env_variable("DEBUG_MODE", False)
-    MAX_TOKENS = get_env_variable("MAX_TOKENS", 150)
-    SIMILARITY_THRESHOLD = get_env_variable("SIMILARITY_THRESHOLD", 0.95)
+    def __init__(self):
+        # Load environment variables
+        load_dotenv()
+
+        # Debug print
+        enabled_llms = get_env_variable("ENABLED_LLMS", "CHATGPT").split(",")
+        logger.debug(f"Loaded ENABLED_LLMS from environment: {enabled_llms}")
+
+        self.ENABLED_LLMS = enabled_llms
+        self.CHATGPT_ENABLED = "CHATGPT" in self.ENABLED_LLMS
+        self.CLAUDE_ENABLED = "CLAUDE" in self.ENABLED_LLMS
+
+        # Debug print
+        logger.debug(f"CHATGPT_ENABLED: {self.CHATGPT_ENABLED}")
+        logger.debug(f"CLAUDE_ENABLED: {self.CLAUDE_ENABLED}")
+
+        # Other config variables...
+        self.API_KEY = get_env_variable("CHATGPT_API_KEY", "")
+        self.DEBUG_MODE = get_env_variable("DEBUG_MODE", False)
+        self.MAX_TOKENS = get_env_variable("MAX_TOKENS", 150)
+        self.SIMILARITY_THRESHOLD = get_env_variable("SIMILARITY_THRESHOLD", 0.95)
 
 
 environment_config = EnvironmentConfig()
