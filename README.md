@@ -50,6 +50,7 @@ This project implements a debate argument evaluation tool using Large Language M
 │
 ├── /debate_traversal/
 │   ├── traversal_logic.py                  # Implements BFS traversal with priority queue
+│   ├── priority_queue_manager.py           # Manages priority queue
 │   └── traversal_injector.py               # Injects traversal services dynamically
 │
 ├── /async_processing/

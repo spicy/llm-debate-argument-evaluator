@@ -1,4 +1,3 @@
-from config import debate_tree_config  # MAX_CHILDREN_PER_NODE, MAX_TREE_DEPTH
 from services.argument_generation_service import ArgumentGenerationService
 from services.evaluation_service import EvaluationService
 from services.priority_queue_service import PriorityQueueService
@@ -6,7 +5,7 @@ from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import log_execution_time, logger
 
 
-class ExpandNodeCommand:
+class GenerateArgumentsCommand:
     def __init__(
         self,
         argument_generation_service: ArgumentGenerationService,
@@ -20,22 +19,14 @@ class ExpandNodeCommand:
         self.score_aggregator_service = score_aggregator_service
 
     @log_execution_time
-    async def execute(self, node_id: str):
-        logger.debug(f"Attempting to expand node with ID {node_id}")
-        # Retrieve the node from the priority queue
-        node = self.priority_queue_service.get_node(int(node_id))
-        logger.debug(f"Node: {node}")
-        if not node:
-            logger.warning(f"Node with ID {node_id} not found.")
-            return
-
-        category = node["category"]
-        support = f"Based on this argument: {node["argument"]}, make an argument that supports it further."
-        against = f"Based on this argument: {node["argument"]}, make an argument that rebuttals this argument."
-        # Expand the node like it was before in the generation arguments "make 3 more arguments that support this" and "make 3 more arguments that are against this"
+    async def execute(self, topic: str, subcategory: str, support: str, against: str):
+        logger.info(
+            f"Generating arguments for topic: {topic}, subcategory: {subcategory}"
+        )
+        # Generate arguments
         arguments = await self.argument_generation_service.generate_arguments(
-            "none", category, support, against, 1
-        )  # For now 1 from 3
+            topic, subcategory, support, against, 1  # Changed from 3 to 1
+        )
 
         logger.info(f"Generated {len(arguments)} arguments. Starting evaluation.")
         for i, argument in enumerate(arguments, 1):
@@ -48,20 +39,20 @@ class ExpandNodeCommand:
                 evaluation_results
             )
 
+            # Create a new node with the argument and its evaluation
+            # Needs knowledge of existing nodes to get its id.
             new_node = {
-                "id": self.priority_queue_service.get_unique_id(),
+                "id": self.priority_queue_service.get_unique_id(),  # Needed for priority queue
                 "argument": argument,
-                "category": category,
+                "category": subcategory,
                 "evaluation": evaluation_result,
-                "parent": node["id"],
+                "parent": -1,  # if its the root
             }
 
+            # Add the new node to the priority queue
             self.priority_queue_service.add_node(new_node)
             logger.debug(f"Added argument {i} to priority queue")
 
-        # Expand the node in the debate tree
-        # expanded_nodes = await self.node_expansion_handler.expand_node(node)
-
         logger.info(
-            f"Node {node_id} expanded successfully. Added {len(arguments)} new nodes."
+            f"Generated and evaluated {len(arguments)} arguments for {subcategory} in {topic}."
         )
