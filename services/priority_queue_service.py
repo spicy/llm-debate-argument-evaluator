@@ -14,16 +14,22 @@ class PriorityQueueService:
         logger.info("PriorityQueueService initialized")
 
     def add_node(self, node, priority="MEDIUM"):
-        if priority not in priority_queue_config.PRIORITY_LEVELS:
-            raise ValueError(
-                f"Invalid priority level. Must be one of {list(priority_queue_config.PRIORITY_LEVELS.keys())}"
-            )
-        priority_value = priority_queue_config.PRIORITY_LEVELS[priority]
+        if node["evaluation"] > 0.0 and node["evaluation"] < 1.0:
+            priority_value = node["evaluation"]
+
+        # Remove this
+        # if priority not in priority_queue_config.PRIORITY_LEVELS:
+        #     raise ValueError(
+        #         f"Invalid priority level. Must be one of {list(priority_queue_config.PRIORITY_LEVELS.keys())}"
+        #     )
+        # priority_value = priority_queue_config.PRIORITY_LEVELS[priority]
         if node["id"] in self.entry_finder:
             self.remove_node(node["id"])
-        entry = [priority_value, self.counter, node]
+        entry = [-priority_value, self.counter, node]
         self.entry_finder[node["id"]] = entry
-        heapq.heappush(self.queue, entry)
+        heapq.heappush(self.queue, entry) # "Prioity queue BFS"
+        self.queue.sort(key=lambda x:x[0]) # "We just sort it from biggest to smallest"
+        logger.debug(f"List order in prioity {self.queue}")
         self.counter += 1
 
         tree = dependency_registry.get("debate_tree_subject")
@@ -56,3 +62,9 @@ class PriorityQueueService:
     # Allows for new nodes to be unique when they enter the queue
     def get_unique_id(self):
         return self.counter
+    
+    # Sets prioity of node based on other nodes scores (or evaluation is the priority (near to 1 is higher and lower if 0))
+    def get_top_node(self):
+        if not len(self.queue) == 0:
+            return self.queue[0]
+        return None
