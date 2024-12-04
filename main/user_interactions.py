@@ -11,13 +11,19 @@ class UserInteractions:
         while True:
             command = await asyncio.to_thread(
                 input,
-                "Enter a command (traverse/expand/submit/generate/evaluate/load/quit): ",
+                "Enter a command (run/traverse/expand/submit/generate/evaluate/load/quit): ",
             )
 
             if command == "quit":
                 logger.info("User requested to quit")
                 self.controller.quit_event.set()
                 break
+            elif command == "run":
+                topic = await asyncio.to_thread(input, "Enter topic for debate tree: ")
+                depth = await asyncio.to_thread(
+                    input, "Enter maximum depth (default 3): "
+                )
+                await self.controller.run_debate_tree(topic, int(depth) if depth else 3)
             elif command == "traverse":
                 topic = await asyncio.to_thread(input, "Enter root topic to traverse: ")
                 depth = await asyncio.to_thread(

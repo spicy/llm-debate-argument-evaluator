@@ -20,18 +20,6 @@ class TraversalLogic:
         evaluate_node_func,
         max_depth: int = debate_tree_config.MAX_TREE_DEPTH,
     ):
-        # Create initial root node
-        root_node = {
-            "id": root_node_id,
-            "depth": 0,
-            "argument": root_node_id,  # Initial topic serves as the root argument
-            "category": "root",
-            "parent": -1,
-            "evaluation": 1.0,  # Default high priority for root
-        }
-
-        self.priority_queue_service.add_node(root_node, "HIGH")
-
         while not self.priority_queue_service.is_empty():
             current_node = self.priority_queue_service.pop_node()
             current_node_id = current_node["id"]
@@ -48,7 +36,6 @@ class TraversalLogic:
             self.visited_nodes[current_node_id] = current_node
             logger.debug(f"Visiting node {current_node_id}")
 
-            # Get existing children
             existing_children = self.priority_queue_service.get_children(
                 current_node_id
             )
@@ -66,12 +53,17 @@ class TraversalLogic:
 
             yield current_node
 
-    def _determine_priority(self, evaluation: float) -> str:
+    def _determine_priority(self, evaluation: dict) -> str:
         """
         Determine priority level based on evaluation score
         """
-        if evaluation >= debate_traversal_config.HIGH_PRIORITY_THRESHOLD:
+        if not evaluation:
+            return "MEDIUM"
+
+        avg_score = sum(evaluation.values()) / len(evaluation) if evaluation else 0.0
+
+        if avg_score >= debate_traversal_config.HIGH_PRIORITY_THRESHOLD:
             return "HIGH"
-        elif evaluation <= debate_traversal_config.LOW_PRIORITY_THRESHOLD:
+        elif avg_score <= debate_traversal_config.LOW_PRIORITY_THRESHOLD:
             return "LOW"
         return "MEDIUM"

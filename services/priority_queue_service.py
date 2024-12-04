@@ -67,9 +67,11 @@ class PriorityQueueService:
         while self.queue:
             priority, count, node = heapq.heappop(self.queue)
             if node is not self.REMOVED:
-                del self.entry_finder[node["id"]]
-                logger.debug(f"Popped node {node['id']} with priority {priority}")
-                return node
+                node_id = str(node["id"])
+                if node_id in self.entry_finder:
+                    del self.entry_finder[node_id]
+                    logger.debug(f"Popped node {node_id} with priority {priority}")
+                    return node
         logger.error("Attempted to pop from an empty priority queue")
         raise KeyError("pop from an empty priority queue")
 
@@ -90,3 +92,10 @@ class PriorityQueueService:
             for node_id, entry in self.entry_finder.items()
             if entry[2] is not self.REMOVED
         }
+
+    def update_node(self, node_id, updated_node):
+        """Update a node in the priority queue"""
+        if node_id in self.entry_finder:
+            self.entry_finder[node_id] = updated_node
+        else:
+            raise KeyError(f"Node with ID {node_id} not found in priority queue")
