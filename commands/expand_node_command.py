@@ -48,10 +48,16 @@ class ExpandNodeCommand:
                 evaluation_results
             )
 
+            # Get parent node's topic and subtopic
+            parent_topic = node.get("topic", "Unknown")
+            parent_subtopic = node.get("subtopic", node["category"])
+
             new_node = {
                 "id": self.priority_queue_service.get_unique_id(),
                 "argument": argument,
                 "category": category,
+                "topic": parent_topic,  # Inherit topic from parent
+                "subtopic": parent_subtopic,  # Inherit subtopic from parent
                 "evaluation": evaluation_result,
                 "parent": node["id"],
             }

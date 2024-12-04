@@ -3,6 +3,7 @@ import heapq
 from config import priority_queue_config
 from utils.dependency_registry import dependency_registry
 from utils.logger import logger
+from utils.state_saver import StateSaver
 
 
 class PriorityQueueService:
@@ -11,6 +12,7 @@ class PriorityQueueService:
         self.entry_finder = {}
         self.REMOVED = "<removed-task>"
         self.counter = 0
+        self.state_saver = StateSaver()
         logger.info("PriorityQueueService initialized")
 
     def add_node(self, node, priority="MEDIUM"):
@@ -30,6 +32,9 @@ class PriorityQueueService:
         tree.debate_tree = self.entry_finder
 
         logger.debug(f"Added node {node['id']} with priority {priority}")
+
+        # Save state after adding node
+        self.state_saver.save_node_state(self.entry_finder, "node_add")
 
     def remove_node(self, node_id):
         entry = self.entry_finder.pop(node_id)

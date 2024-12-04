@@ -1,3 +1,4 @@
+import re
 from typing import Any, Dict
 
 import aiohttp
@@ -61,7 +62,7 @@ class ChatGPTAPIClient(BaseAPIClient):
                     await self._check_response(response)
                     result = await response.json()
                     content = result["choices"][0]["message"]["content"]
-                    logger.info(f"Text generation completed")
+                    logger.info("Text generation completed")
                     return content
         except ClientError as e:
             logger.error(f"API request failed: {str(e)}")
@@ -101,11 +102,19 @@ class ChatGPTAPIClient(BaseAPIClient):
                 f"API request failed with status {response.status}: {error_detail}"
             )
 
-    def _extract_score(self, result: Dict[str, Any]) -> float:
+    def _extract_score(self, response: dict) -> float:
         try:
-            content = result["choices"][0]["message"]["content"]
-            # Assuming the content is a string representation of a float
-            return float(content)
-        except (KeyError, ValueError, IndexError) as e:
+            content = (
+                response.get("choices", [{}])[0].get("message", {}).get("content", "")
+            )
+
+            # Look for "SCORE: X.XX" pattern
+            score_match = re.search(r"SCORE:\s*(\d+\.?\d*)", content, re.IGNORECASE)
+            if score_match:
+                return float(score_match.group(1))
+            raise ValueError(
+                f"No properly formatted score found in response: {content}"
+            )
+        except Exception as e:
             logger.error(f"Failed to extract score from API response: {str(e)}")
             raise Exception(f"Failed to extract score from API response: {str(e)}")

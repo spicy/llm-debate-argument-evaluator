@@ -40,13 +40,14 @@ class GenerateArgumentsCommand:
             )
 
             # Create a new node with the argument and its evaluation
-            # Needs knowledge of existing nodes to get its id.
             new_node = {
-                "id": self.priority_queue_service.get_unique_id(),  # Needed for priority queue
+                "id": self.priority_queue_service.get_unique_id(),
                 "argument": argument,
                 "category": subcategory,
+                "topic": topic,
+                "subtopic": subcategory,
                 "evaluation": evaluation_result,
-                "parent": -1,  # if its the root
+                "parent": -1,
             }
 
             # Add the new node to the priority queue
