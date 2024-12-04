@@ -21,39 +21,46 @@ class TraversalLogic:
         max_depth: int = debate_tree_config.MAX_TREE_DEPTH,
     ):
         """Traverse the debate tree starting from root_node_id"""
-        root_node = get_node_func(root_node_id)
-        if not root_node:
-            logger.error(f"Root node {root_node_id} not found")
-            return
+        try:
+            root_node = get_node_func(root_node_id)
+            if not root_node:
+                logger.error(f"Root node {root_node_id} not found")
+                return
 
-        # Initialize root node in priority queue if not visited
-        if str(root_node["id"]) not in self.visited_nodes:
-            evaluation = await evaluate_node_func(root_node_id)
-            priority = self._determine_priority(evaluation)
-            self.priority_queue_service.add_node(root_node, priority)
-            logger.debug(f"Added root node {root_node_id} to priority queue")
+            # Initialize root node in priority queue if not visited
+            if str(root_node["id"]) not in self.visited_nodes:
+                evaluation = await evaluate_node_func(root_node_id)
+                priority = self._determine_priority(evaluation)
+                self.priority_queue_service.add_node(root_node, priority)
+                logger.debug(f"Added root node {root_node_id} to priority queue")
 
-        while not self.priority_queue_service.is_empty():
-            try:
-                current_node = self.priority_queue_service.pop_node()
-                if not current_node:
-                    continue
-
-                current_node_id = str(current_node["id"])
-                if current_node_id in self.visited_nodes:
-                    continue
-
-                if current_node["depth"] >= max_depth:
-                    logger.debug(
-                        f"Reached max depth {max_depth} for node {current_node_id}"
-                    )
-                    continue
-
-                self.visited_nodes[current_node_id] = current_node
-                logger.debug(f"Visiting node {current_node_id}")
-
-                # Expand current node
+            while True:
                 try:
+                    if self.priority_queue_service.is_empty():
+                        logger.debug("Priority queue is empty, ending traversal")
+                        break
+
+                    current_node = self.priority_queue_service.pop_node()
+                    if not current_node:
+                        continue
+
+                    current_node_id = str(current_node["id"])
+                    if current_node_id in self.visited_nodes:
+                        continue
+
+                    # Check depth before processing
+                    if current_node["depth"] >= max_depth:
+                        logger.debug(
+                            f"Reached max depth {max_depth} for node {current_node_id}"
+                        )
+                        self.visited_nodes[current_node_id] = current_node
+                        yield current_node
+                        continue
+
+                    self.visited_nodes[current_node_id] = current_node
+                    logger.debug(f"Visiting node {current_node_id}")
+
+                    # Expand current node
                     new_nodes = await expand_node_func(current_node_id)
                     if new_nodes:
                         for new_node in new_nodes:
@@ -66,26 +73,28 @@ class TraversalLogic:
                                 logger.debug(
                                     f"Added new node {new_node_id} with priority {priority}"
                                 )
-                except Exception as e:
-                    logger.error(f"Error expanding node {current_node_id}: {str(e)}")
 
-                yield current_node
+                    yield current_node
 
-            except Exception as e:
-                logger.error(f"Error during traversal: {str(e)}")
-                continue
+                except KeyError as e:
+                    logger.error(f"Error during node processing: {str(e)}")
+                    continue
 
-    def _determine_priority(self, evaluation: dict) -> str:
-        """
-        Determine priority level based on evaluation score
-        """
-        if not evaluation:
-            return "MEDIUM"
+        except Exception as e:
+            logger.error(f"Fatal error in traverse: {str(e)}")
+            return
 
-        avg_score = sum(evaluation.values()) / len(evaluation) if evaluation else 0.0
+    def _determine_priority(self, evaluation: Any) -> str:
+        """Determine priority based on evaluation score"""
+        if isinstance(evaluation, dict):
+            # If evaluation is a dict, use the average of scores
+            score = sum(evaluation.values()) / len(evaluation) if evaluation else 0.5
+        else:
+            # If evaluation is a number, use it directly
+            score = float(evaluation) if evaluation is not None else 0.5
 
-        if avg_score >= debate_traversal_config.HIGH_PRIORITY_THRESHOLD:
+        if score >= debate_traversal_config.HIGH_PRIORITY_THRESHOLD:
             return "HIGH"
-        elif avg_score <= debate_traversal_config.LOW_PRIORITY_THRESHOLD:
+        elif score <= debate_traversal_config.LOW_PRIORITY_THRESHOLD:
             return "LOW"
         return "MEDIUM"

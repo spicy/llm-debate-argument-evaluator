@@ -27,9 +27,9 @@ class UserInteractions:
             elif command == "traverse":
                 topic = await asyncio.to_thread(input, "Enter root topic to traverse: ")
                 depth = await asyncio.to_thread(
-                    input, "Enter maximum depth (default 5): "
+                    input, "Enter maximum depth (default 3): "
                 )
-                await self.controller.traverse_debate(topic, int(depth) if depth else 5)
+                await self.controller.traverse_debate(topic, int(depth) if depth else 3)
             elif command == "expand":
                 node_id = await asyncio.to_thread(input, "Enter node ID to expand: ")
                 logger.info(f"User requested to expand node: {node_id}")

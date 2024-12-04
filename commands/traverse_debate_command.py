@@ -63,9 +63,13 @@ class TraverseDebateCommand:
         )
         score = self.score_aggregator_service.average_scores(evaluation_result)
 
-        # Update node with new evaluation
-        node["evaluation"] = score
-        self.priority_queue_service.update_node(node_id, node)
+        # Create a copy of the node and update it
+        updated_node = node.copy()
+        updated_node["evaluation"] = score
+
+        # Update node in priority queue with the same priority
+        current_priority = updated_node.get("evaluation", "MEDIUM")
+        self.priority_queue_service.update_node(node_id, updated_node)
 
         logger.debug(f"Evaluation result for node {node_id}: {score}")
         return score

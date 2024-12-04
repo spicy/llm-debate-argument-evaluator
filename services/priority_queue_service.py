@@ -97,7 +97,10 @@ class PriorityQueueService:
 
     def is_empty(self) -> bool:
         """Check if the priority queue is empty"""
-        return len(self.entry_finder) == 0
+        # Clean up any REMOVED entries from the queue
+        while self.queue and self.queue[0][2] is self.REMOVED:
+            heapq.heappop(self.queue)
+        return len(self.queue) == 0
 
     def get_unique_id(self) -> int:
         """Get a unique ID for new nodes"""
@@ -136,5 +139,15 @@ class PriorityQueueService:
         else:
             logger.warning(f"Attempted to update non-existent node {node_id}")
             # Use evaluation score as priority if available, otherwise default to MEDIUM
-            priority = node.get("evaluation", "MEDIUM")
+            priority = node.get("evaluation", "MEDIUMs")
             self.add_node(node.copy(), priority)
+
+    def node_exists(self, node_id: str) -> bool:
+        """Check if a node exists and is not marked as removed"""
+        entry = self.entry_finder.get(str(node_id))
+        return (
+            entry is not None
+            and isinstance(entry, (list, tuple))
+            and len(entry) >= 3
+            and entry[2] is not self.REMOVED
+        )

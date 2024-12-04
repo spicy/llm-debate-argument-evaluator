@@ -74,6 +74,8 @@ class CommandInjector:
                 priority_queue_service,
                 registry.get("expand_node_command"),
                 registry.get("evaluate_debate_tree_command"),
+                evaluation_service,
+                registry.get("score_aggregator_service"),
             ),
         )
 
