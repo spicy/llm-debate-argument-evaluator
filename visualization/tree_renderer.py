@@ -9,6 +9,7 @@ from pygame import Surface
 
 from utils.logger import logger
 from visualization.observer import Observer
+from textwrap import wrap
 
 
 @dataclass
@@ -310,18 +311,29 @@ class TreeRenderer(Observer):
     def _draw_selected_node_info(self, node_id: str) -> None:
         """Draw information for the selected node"""
         node_data = self.graph.nodes[node_id]
+        node_position = list(self._get_screen_coordinates(self.positions[node_id]))
         argument = node_data.get("argument", "")
         if argument:
-            self._draw_argument_info(argument)
+            self._draw_argument_info(argument, node_position)
 
-    def _draw_argument_info(self, argument: str) -> None:
+    def _draw_argument_info(self, argument: str, position: list[int, int]) -> None:
         """Draw argument information panel"""
-        max_width = 300
-        text_surface = self.font.render(argument[:50] + "...", True, (0, 0, 0))
-        text_rect = text_surface.get_rect(topleft=(10, 10))
+        max_width = 450
+        text_width = 50
+        text_height = 20
+        
+        # Split argument into multiple lines if too long
+        arguments = wrap(argument, width=text_width)
+        # arguments = [argument[i : i + text_width] for i in range(0, len(argument), text_width)]
 
-        info_surface = Surface((max_width, 100))
-        info_surface.fill((255, 255, 255))
-        info_surface.blit(text_surface, text_rect)
+        argument = argument
+        info_surface = Surface((max_width, len(arguments) * text_height + 15))
+        info_surface.fill((200, 200, 200))
 
-        self.screen.blit(info_surface, (10, 10))
+        for i, arg in enumerate(arguments):
+            text_surface = self.font.render(arg, True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=(max_width / 2, i * text_height + 20))
+            info_surface.blit(text_surface, text_rect)
+
+        info_surface_rect = info_surface.get_rect(midtop = (position[0], position[1] + 50))
+        self.screen.blit(info_surface, info_surface_rect)
