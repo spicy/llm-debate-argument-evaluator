@@ -320,19 +320,20 @@ class TreeRenderer(Observer):
         """Draw argument information panel"""
         max_width = 450
         text_width = 50
+        text_height = 20
         
         # Split argument into multiple lines if too long
         arguments = wrap(argument, width=text_width)
         # arguments = [argument[i : i + text_width] for i in range(0, len(argument), text_width)]
 
         argument = argument
-        info_surface = Surface((max_width, len(arguments) * 25))
+        info_surface = Surface((max_width, len(arguments) * text_height + 15))
         info_surface.fill((200, 200, 200))
 
         for i, arg in enumerate(arguments):
             text_surface = self.font.render(arg, True, (0, 0, 0))
-            text_rect = text_surface.get_rect(center=(max_width / 2, i * 20 + 20))
+            text_rect = text_surface.get_rect(center=(max_width / 2, i * text_height + 20))
             info_surface.blit(text_surface, text_rect)
 
-        info_surface_rect = info_surface.get_rect(center =(position[0], position[1] + 80))
+        info_surface_rect = info_surface.get_rect(midtop = (position[0], position[1] + 50))
         self.screen.blit(info_surface, info_surface_rect)
