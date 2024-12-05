@@ -29,13 +29,13 @@ class PriorityQueueService:
 
         # Convert priority string to numeric value
         priority_value = self._get_priority_value(priority)
-        count = self.counter
-        self.counter += 1
+        # count = self.counter
+        # self.counter += 1 # COMMENTED OUT because of double counting
 
         # Store the complete node object
         entry = [
             -priority_value,
-            count,
+            node["id"],
             node.copy(),
         ]  # Make a copy to prevent reference issues
         self.entry_finder[node_id] = entry
