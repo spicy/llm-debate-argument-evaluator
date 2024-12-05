@@ -85,7 +85,7 @@ class TreeRenderer(Observer):
         self.graph.clear()
         for node_id, node_data in debate_tree.items():
             # Node data is now the complete node dictionary
-            self._add_node_to_graph(node_id, node_data)
+            self._add_node_to_graph(node_id, node_data[-1])
 
     def _add_node_to_graph(self, node_id: str, node_dict: Dict[str, Any]) -> None:
         """Add a node and its edges to the graph"""
@@ -237,6 +237,8 @@ class TreeRenderer(Observer):
             self._render_frame(selected_node)
             clock.tick(60)
             await asyncio.sleep(0)
+
+        pg.quit()
 
     def _handle_events(self, quit_event, selected_node: Optional[str]) -> Optional[str]:
         """Handle Pygame events and return updated selected node"""

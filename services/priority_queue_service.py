@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from config.priority_queue_config import priority_queue_config
 from utils.logger import logger
 from utils.state_saver import StateSaver
-
+from utils.dependency_registry import dependency_registry
 
 class PriorityQueueService:
     REMOVED = "<removed>"
@@ -40,6 +40,10 @@ class PriorityQueueService:
         ]  # Make a copy to prevent reference issues
         self.entry_finder[node_id] = entry
         heapq.heappush(self.queue, entry)
+
+        debate_tree_subject = dependency_registry.get("debate_tree_subject")
+        debate_tree_subject.debate_tree = self.entry_finder
+
         logger.debug(f"Added/Updated node {node_id} with priority {priority}")
 
         # Save state after adding node
