@@ -29,13 +29,13 @@ class PriorityQueueService:
 
         # Convert priority string to numeric value
         priority_value = self._get_priority_value(priority)
-        # count = self.counter
-        # self.counter += 1 # COMMENTED OUT because of double counting
+        count = self.counter
+        self.counter += 1 # COMMENTED OUT because of double counting
 
         # Store the complete node object
         entry = [
             -priority_value,
-            node["id"],
+            count,
             node.copy(),
         ]  # Make a copy to prevent reference issues
         self.entry_finder[node_id] = entry
@@ -109,7 +109,6 @@ class PriorityQueueService:
     def get_unique_id(self) -> int:
         """Get a unique ID for new nodes"""
         unique_id = self.counter
-        self.counter += 1
         return unique_id
 
     def _get_priority_value(self, priority: Any) -> int:
