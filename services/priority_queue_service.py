@@ -24,6 +24,16 @@ class PriorityQueueService:
             return
 
         node_id = str(node["id"])
+        parent_id = str(node.get("parent", -1))
+
+        # Ensure parent exists in tree before adding child
+        if parent_id != "-1" and parent_id not in self._debate_tree:
+            logger.warning(
+                f"Attempting to add node {node_id} with non-existent parent {parent_id}"
+            )
+            return
+
+        self._debate_tree[node_id] = node.copy()
         if node_id in self.entry_finder:
             self.remove_node(node_id)
 
@@ -141,6 +151,7 @@ class PriorityQueueService:
             # Use evaluation score as priority if available, otherwise default to MEDIUM
             priority = node.get("evaluation", "MEDIUMs")
             self.add_node(node.copy(), priority)
+        self.notify()
 
     def node_exists(self, node_id: str) -> bool:
         """Check if a node exists and is not marked as removed"""
@@ -151,3 +162,9 @@ class PriorityQueueService:
             and len(entry) >= 3
             and entry[2] is not self.REMOVED
         )
+
+    def notify(self):
+        logger.debug(
+            f"Tree state changed. Current nodes: {list(self._debate_tree.keys())}"
+        )
+        super().notify()

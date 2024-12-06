@@ -78,6 +78,7 @@ class TraversalLogic:
 
                     yield current_node
                     self._track_optimal_path(current_node)
+                    self.priority_queue_service.notify()
 
                 except KeyError as e:
                     logger.error(f"Error during node processing: {str(e)}")
