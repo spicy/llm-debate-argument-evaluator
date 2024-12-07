@@ -9,6 +9,7 @@ from pygame import Surface
 
 from utils.logger import logger
 from visualization.observer import Observer
+from services.priority_queue_service import PriorityQueueService
 
 
 @dataclass
@@ -33,7 +34,7 @@ class CameraSettings:
 class TreeRenderer(Observer):
     """Renders a visual representation of the debate tree using Pygame"""
 
-    def __init__(self, debate_tree_subject, window_size: Tuple[int, int] = (1200, 800)):
+    def __init__(self, debate_tree_subject: PriorityQueueService, window_size: Tuple[int, int] = (1200, 800)):
         """Initialize the tree renderer with the given debate tree subject"""
         self.debate_tree_subject = debate_tree_subject
         self.debate_tree_subject.attach(self)

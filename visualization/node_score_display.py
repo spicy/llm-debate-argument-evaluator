@@ -1,11 +1,12 @@
 from typing import Any, Dict
 
 from utils.logger import logger
-from visualization.observer import DebateTreeSubject, Observer
+from visualization.observer import Observer
+from services.priority_queue_service import PriorityQueueService
 
 
 class NodeScoreDisplay(Observer):
-    def __init__(self, debate_tree_subject: DebateTreeSubject):
+    def __init__(self, debate_tree_subject: PriorityQueueService):
         self.debate_tree_subject = debate_tree_subject
         self.debate_tree_subject.attach(self)
 
