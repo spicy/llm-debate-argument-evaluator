@@ -40,7 +40,7 @@ class SubmitArgumentCommand:
         }
 
         # Add the new node to the priority queue
-        self.priority_queue_service.update_node(new_node)
+        self.priority_queue_service.add_node(new_node)
         logger.debug("New node added to priority queue")
 
         logger.debug("Argument submitted and evaluated successfully.")

@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 from config.debate_traversal_config import debate_traversal_config
 from config.debate_tree_config import debate_tree_config
-from services.priority_queue_service import PriorityQueueService
+from visualization.priority_queue_service import PriorityQueueService
 from utils.logger import logger
 
 
