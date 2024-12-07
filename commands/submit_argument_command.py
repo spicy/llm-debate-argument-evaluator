@@ -1,5 +1,5 @@
 from services.evaluation_service import EvaluationService
-from services.priority_queue_service import PriorityQueueService
+from visualization.priority_queue_service import PriorityQueueService
 from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import log_execution_time, logger
 
@@ -40,7 +40,7 @@ class SubmitArgumentCommand:
         }
 
         # Add the new node to the priority queue
-        self.priority_queue_service.add_node(new_node)
+        self.priority_queue_service.update_node(new_node)
         logger.debug("New node added to priority queue")
 
         logger.debug("Argument submitted and evaluated successfully.")

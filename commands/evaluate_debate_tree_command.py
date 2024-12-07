@@ -1,5 +1,5 @@
 from services.evaluation_service import EvaluationService
-from services.priority_queue_service import PriorityQueueService
+from visualization.priority_queue_service import PriorityQueueService
 from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import log_execution_time, logger
 

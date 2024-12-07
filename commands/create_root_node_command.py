@@ -1,4 +1,4 @@
-from services.priority_queue_service import PriorityQueueService
+from visualization.priority_queue_service import PriorityQueueService
 from utils.logger import log_execution_time, logger
 
 
