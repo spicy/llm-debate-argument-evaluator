@@ -2,6 +2,7 @@ import heapq
 from typing import Any, Dict, List, Optional, Tuple
 
 from config.priority_queue_config import priority_queue_config
+from config.debate_traversal_config import debate_traversal_config
 from utils.logger import logger
 from utils.state_saver import StateSaver
 from visualization.observer import DebateTreeSubject
@@ -50,11 +51,14 @@ class PriorityQueueService(DebateTreeSubject):
             node.copy(),
         ]  # Make a copy to prevent reference issues
         self.entry_finder[node_id] = entry
-        heapq.heappush(self.queue, entry)
+        heapq.heappush(self.queue, entry) #ISSUE with this line (heapq.heappush(self.queue, entry)) - TypeError: '<' not supported between instances of 'dict' and 'str'
         logger.debug(f"Added/Updated node {node_id} with priority {priority}")
 
         # Save state after adding node
         self.state_saver.save_node_state(self.entry_finder, "node_add")
+        
+        # Notify observers of the change
+        self.notify()
 
     def remove_node(self, node_id: str) -> None:
         """Mark an existing node as removed"""
@@ -143,16 +147,34 @@ class PriorityQueueService(DebateTreeSubject):
             and isinstance(existing_entry, (list, tuple))
             and len(existing_entry) >= 3
         ):
-            priority = -existing_entry[0]  # Get original priority
+            
+            priority_value = -existing_entry[0]  # Get original priority
+            priority = self._get_priority_from_int_to_str(priority_value) # int to str
             self.remove_node(node_id)
             self.add_node(node.copy(), priority)  # Make a copy of the node
             logger.debug(f"Updated node {node_id} with preserved priority {priority}")
         else:
             logger.warning(f"Attempted to update non-existent node {node_id}")
             # Use evaluation score as priority if available, otherwise default to MEDIUM
-            priority = node.get("evaluation", "MEDIUMs")
+            score = node.get("evaluation", .5) # Default is 0.5 (MEDIUM)
+            priority = self._get_priority_from_score(score)
             self.add_node(node.copy(), priority)
-        self.notify()
+
+    def _get_priority_from_int_to_str(self, priority: int) -> str:
+        """Convert priority value to string"""
+        if priority == 3:
+            return "HIGH"
+        if priority == 1:
+            return "LOW"
+        return "MEDIUM"
+    
+    def _get_priority_from_score(self, node_score: float) -> str:
+        """Get priority level based on node score"""
+        if node_score >= debate_traversal_config.HIGH_PRIORITY_THRESHOLD:
+            return "HIGH"
+        if node_score <= debate_traversal_config.LOW_PRIORITY_THRESHOLD:
+            return "LOW"
+        return "MEDIUM"
 
     def node_exists(self, node_id: str) -> bool:
         """Check if a node exists and is not marked as removed"""
