@@ -2,13 +2,13 @@ from typing import Any, Dict
 
 from utils.logger import logger
 from visualization.observer import Observer
-from services.priority_queue_service import PriorityQueueService
+from visualization.priority_queue_service import PriorityQueueService
 
 
 class NodeScoreDisplay(Observer):
-    def __init__(self, debate_tree_subject: PriorityQueueService):
-        self.debate_tree_subject = debate_tree_subject
-        self.debate_tree_subject.attach(self)
+    def __init__(self, priority_queue_service: PriorityQueueService):
+        self.priority_queue_service = priority_queue_service
+        self.priority_queue_service.attach(self)
 
     def update(self, subject):
         self.display_scores(subject.debate_tree)

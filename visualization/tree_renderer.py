@@ -9,7 +9,7 @@ from pygame import Surface
 
 from utils.logger import logger
 from visualization.observer import Observer
-from services.priority_queue_service import PriorityQueueService
+from visualization.priority_queue_service import PriorityQueueService
 
 
 @dataclass
@@ -71,6 +71,7 @@ class TreeRenderer(Observer):
 
     def update(self, subject) -> None:
         """Update the graph when the debate tree changes"""
+        logger.debug("Tree render update")
         self.update_graph(subject.debate_tree)
 
     def update_graph(self, debate_tree: Dict[str, Any]) -> None:

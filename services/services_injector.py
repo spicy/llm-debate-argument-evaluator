@@ -9,7 +9,6 @@ from services.async_processing_service import AsyncProcessingService
 from services.evaluation_service import EvaluationService
 from services.memoization_service import MemoizationService
 from services.model_selection_service import ModelSelectionService
-from services.priority_queue_service import PriorityQueueService
 from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import logger
 
@@ -55,7 +54,6 @@ class ServicesInjector:
         )
         argument_generation_service = ArgumentGenerationService(default_model)
 
-        priority_queue_service = PriorityQueueService()
         score_aggregator_service = ScoreAggregatorService()
 
         # Register services
@@ -64,7 +62,6 @@ class ServicesInjector:
         registry.register("evaluation_service", evaluation_service)
         registry.register("model_selection_service", model_selection_service)
         registry.register("argument_generation_service", argument_generation_service)
-        registry.register("priority_queue_service", priority_queue_service)
         registry.register("score_aggregator_service", score_aggregator_service)
 
         logger.info("Services injected successfully")
