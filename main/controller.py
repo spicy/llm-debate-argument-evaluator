@@ -36,7 +36,7 @@ class Controller:
     @log_execution_time
     async def traverse_debate(self, root_node_id: str, max_depth: int):
         """Traverses an existing debate tree"""
-        logger.info(f"Starting debate traversal from node: {root_node_id}")
+        logger.info("Starting debate traversal")
         traverse_command = self.injector.get("traverse_debate_command")
         await traverse_command.execute(root_node_id, max_depth)
 

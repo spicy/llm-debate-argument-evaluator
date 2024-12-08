@@ -8,7 +8,7 @@ class UserInteractions:
         self.controller = controller
 
     async def main_loop(self):
-        while True:
+        while not self.controller.quit_event.is_set():
             command = await asyncio.to_thread(
                 input,
                 "Enter a command (run/traverse/expand/submit/generate/evaluate/load/quit): ",
@@ -55,17 +55,19 @@ class UserInteractions:
                     topic, subcategory, support, against
                 )
             elif command == "evaluate":
-                arguments = []
-                while True:
-                    arg = await asyncio.to_thread(
-                        input,
-                        "Enter argument (or empty line to finish): ",
-                    )
-                    if not arg:
-                        break
-                    arguments.append(arg)
-                logger.info(f"User requested evaluation of {len(arguments)} arguments")
-                await self.controller.evaluate_arguments(arguments)
+                logger.info("User requested to evaluate arguments")
+                await self.controller.evaluate_debate_tree()
+                # arguments = []
+                # while True:
+                #     arg = await asyncio.to_thread(
+                #         input,
+                #         "Enter argument (or empty line to finish): ",
+                #     )
+                #     if not arg:
+                #         break
+                #     arguments.append(arg)
+                # logger.info(f"User requested evaluation of {len(arguments)} arguments")
+                # await self.controller.evaluate_arguments(arguments)
             elif command == "load":
                 file_path = await asyncio.to_thread(
                     input, "Enter the path to the JSON file: "
