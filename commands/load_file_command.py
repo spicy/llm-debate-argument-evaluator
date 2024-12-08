@@ -51,24 +51,29 @@ class LoadFileCommand:
 
                     # Log the full argument being processed
                     logger.debug(f"Processing argument: {item['argument']}")
+                    evaluation_result = item.get("evaluation", None)
+                    if evaluation_result is None:
 
-                    # Evaluate the argument
-                    evaluation_results = (
-                        await self.evaluation_service.evaluate_argument(
-                            item["argument"]
+                        # Evaluate the argument
+                        evaluation_results = (
+                            await self.evaluation_service.evaluate_argument(
+                                item["argument"]
+                            )
                         )
-                    )
 
-                    if not evaluation_results:
-                        logger.error(
-                            f"Failed to get evaluation results for argument: {item['argument'][:50]}..."
+                        if not evaluation_results:
+                            logger.error(
+                                f"Failed to get evaluation results for argument: {item['argument'][:50]}..."
+                            )
+                            continue
+
+                        evaluation_result = self.score_aggregator_service.average_scores(
+                            evaluation_results
                         )
-                        continue
-
-                    evaluation_result = self.score_aggregator_service.average_scores(
-                        evaluation_results
-                    )
-                    # evaluation_result = 0.5
+                        # evaluation_result = 0.5
+                        logger.debug(
+                            f"Evaluated argument: {item['argument']} with score {evaluation_result}"
+                        )
 
                     # Create node with proper defaults
                     new_node = {
@@ -81,6 +86,7 @@ class LoadFileCommand:
                         ),
                         "evaluation": evaluation_result,
                         "parent": item.get("parent", -1),
+                        "depth": item.get("depth", 0),
                     }
 
                     # Add to priority queue and processed nodes

@@ -28,13 +28,14 @@ class RunDebateTreeCommand:
             root_node_id = await self.create_root_command.execute(topic)
             logger.info(f"Created root node: {root_node_id}")
 
-            # Step 2: Expand root node
+            # Step 2: Expand root node (More explicitly, expand the root node and evaluate it)
             await self.expand_node_command.execute(root_node_id)
             logger.info("Expanded root node")
 
-            # Step 3: Evaluate the tree
-            await self.evaluate_tree_command.execute()
-            logger.info("Evaluated debate tree")
+            # Expand node already evaluates the node, so we can skip this step
+            # # Step 3: Evaluate the tree
+            # await self.evaluate_tree_command.execute()
+            # logger.info("Evaluated debate tree")
 
             # Step 4: Traverse the tree
             await self.traverse_command.execute(root_node_id, max_depth)
