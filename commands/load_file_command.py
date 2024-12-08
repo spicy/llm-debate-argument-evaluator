@@ -79,7 +79,7 @@ class LoadFileCommand:
                         "subtopic": item.get(
                             "subcategory", item.get("category", "general")
                         ),
-                        "evaluation": evaluation_result,
+                        "evaluation": item.get("evaluation", evaluation_result),
                         "parent": item.get("parent", -1),
                     }
 
