@@ -27,7 +27,7 @@ class EvaluationService:
                 evaluation_config.CULTURAL_ACCEPTANCE: cultural_acceptance,
                 evaluation_config.FACTUAL_ACCURACY: factual_accuracy,
             }
-            logger.debug(
+            logger.info(
                 f"Evaluation results for {model_name}: {evaluations[model_name]}"
             )
 

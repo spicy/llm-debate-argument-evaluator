@@ -68,6 +68,7 @@ class LoadFileCommand:
                     evaluation_result = self.score_aggregator_service.average_scores(
                         evaluation_results
                     )
+                    # evaluation_result = 0.5
 
                     # Create node with proper defaults
                     new_node = {
