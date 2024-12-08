@@ -63,7 +63,9 @@ class PriorityQueueService(DebateTreeSubject):
     def remove_node(self, node_id: str) -> None:
         """Mark an existing node as removed"""
         entry = self.entry_finder.pop(str(node_id))
-        entry[2] = self.REMOVED
+        if entry:
+            entry[2] = self.REMOVED
+        logger.debug(f"Removed node {node_id}")
 
     def pop_node(self) -> Dict[str, Any]:
         """Remove and return the highest priority node"""
