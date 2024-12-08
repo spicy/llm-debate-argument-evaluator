@@ -24,6 +24,8 @@ class EvaluateDebateTreeCommand:
         evaluation_results = {}
 
         for node_id, node in nodes.items():
+            if node_id == "0": # Skip root node
+                continue
             evaluation_result = await self.evaluation_service.evaluate_argument(
                 node["argument"]
             )
