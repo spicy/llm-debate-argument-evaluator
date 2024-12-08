@@ -1,13 +1,14 @@
 from typing import Any, Dict
 
 from utils.logger import logger
-from visualization.observer import DebateTreeSubject, Observer
+from visualization.observer import Observer
+from visualization.priority_queue_service import PriorityQueueService
 
 
 class NodeScoreDisplay(Observer):
-    def __init__(self, debate_tree_subject: DebateTreeSubject):
-        self.debate_tree_subject = debate_tree_subject
-        self.debate_tree_subject.attach(self)
+    def __init__(self, priority_queue_service: PriorityQueueService):
+        self.priority_queue_service = priority_queue_service
+        self.priority_queue_service.attach(self)
 
     def update(self, subject):
         self.display_scores(subject.debate_tree)
@@ -15,7 +16,7 @@ class NodeScoreDisplay(Observer):
     def display_scores(self, debate_tree: Dict[str, Any]):
         logger.info("Displaying node scores")
         for node_id, node_data in debate_tree.items():
-            score = node_data[-1].get("evaluation", 0)
+            score = node_data.get("evaluation", 0)
             color = self._score_to_color(score)
             logger.info(f"Node {node_id}: Score = {score:.2f}, Color = {color}")
 

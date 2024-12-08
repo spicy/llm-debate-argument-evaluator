@@ -35,6 +35,7 @@ class ChatGPTAPIClient(BaseAPIClient):
                     await self._check_response(response)
                     result = await response.json()
                     score = self._extract_score(result)
+                    logger.info(f"Evaluation completed. Score: {score}")
                     return score
         except ClientError as e:
             logger.error(f"API request failed: {str(e)}")

@@ -9,6 +9,7 @@ from pygame import Surface
 
 from utils.logger import logger
 from visualization.observer import Observer
+from visualization.priority_queue_service import PriorityQueueService
 from textwrap import wrap
 
 
@@ -16,10 +17,10 @@ from textwrap import wrap
 class NodeVisualProperties:
     """Visual properties for rendering nodes"""
 
-    radius: int = 20  # Reduced from 30 to show more nodes
-    padding: int = 50  # Reduced from 100 to use more screen space
-    font_size: int = 24  # Reduced from 32 for smaller text
-    small_font_size: int = 16  # Reduced from 24 for smaller text
+    radius: int = 20
+    padding: int = 50
+    font_size: int = 24
+    small_font_size: int = 16
 
 
 @dataclass
@@ -28,13 +29,13 @@ class CameraSettings:
 
     offset_x: float
     offset_y: float
-    zoom: float = 0.7  # Reduced from 1.0 for initial zoomed out view
+    zoom: float = 0.7
 
 
 class TreeRenderer(Observer):
     """Renders a visual representation of the debate tree using Pygame"""
 
-    def __init__(self, debate_tree_subject, window_size: Tuple[int, int] = (1200, 800)):
+    def __init__(self, debate_tree_subject: PriorityQueueService, window_size: Tuple[int, int] = (1200, 800)):
         """Initialize the tree renderer with the given debate tree subject"""
         self.debate_tree_subject = debate_tree_subject
         self.debate_tree_subject.attach(self)
@@ -71,6 +72,7 @@ class TreeRenderer(Observer):
 
     def update(self, subject) -> None:
         """Update the graph when the debate tree changes"""
+        logger.debug("Tree render update")
         self.update_graph(subject.debate_tree)
 
     def update_graph(self, debate_tree: Dict[str, Any]) -> None:
@@ -86,7 +88,7 @@ class TreeRenderer(Observer):
         self.graph.clear()
         for node_id, node_data in debate_tree.items():
             # Node data is now the complete node dictionary
-            self._add_node_to_graph(node_id, node_data[-1])
+            self._add_node_to_graph(node_id, node_data)
 
     def _add_node_to_graph(self, node_id: str, node_dict: Dict[str, Any]) -> None:
         """Add a node and its edges to the graph"""
@@ -107,9 +109,7 @@ class TreeRenderer(Observer):
             return
 
         # Calculate initial positions with more spread
-        self.positions = nx.spring_layout(
-            self.graph, k=3, iterations=50
-        )  # Increased k from 2 to 3
+        self.positions = nx.spring_layout(self.graph, k=3, iterations=50)
 
         # Scale positions to fit screen
         self._scale_positions_to_screen()
@@ -202,7 +202,7 @@ class TreeRenderer(Observer):
                 (
                     screen_pos[0],
                     screen_pos[1] - self.visual_props.radius - 10,
-                ),  # Reduced spacing from 15 to 10
+                ),
             )
 
         self._draw_text(str(node_id), self.small_font, (0, 0, 0), screen_pos)

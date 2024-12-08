@@ -2,16 +2,19 @@ import heapq
 from typing import Any, Dict, List, Optional, Tuple
 
 from config.priority_queue_config import priority_queue_config
+from config.debate_traversal_config import debate_traversal_config
 from utils.logger import logger
 from utils.state_saver import StateSaver
-from utils.dependency_registry import dependency_registry
+from visualization.observer import DebateTreeSubject
 
-class PriorityQueueService:
+
+class PriorityQueueService(DebateTreeSubject):
     REMOVED = "<removed>"
 
     def __init__(self):
-        self.queue = []
-        self.entry_finder = {}
+        super().__init__()
+        self.queue = [] # Maintain a heap queue for efficient priority handling
+        self.entry_finder = {} # Store node data and priority for quick lookup separate from the queue
         self.counter = 0
         self.state_saver = StateSaver()
         self.PRIORITY_LEVELS = priority_queue_config.PRIORITY_LEVELS
@@ -24,35 +27,45 @@ class PriorityQueueService:
             return
 
         node_id = str(node["id"])
+        parent_id = str(node.get("parent", -1))
+
+        # Ensure parent exists in tree before adding child
+        if parent_id != "-1" and parent_id not in self._debate_tree:
+            logger.warning(
+                f"Attempting to add node {node_id} with non-existent parent {parent_id}"
+            )
+            return
+        self._debate_tree[node_id] = node.copy()
+
         if node_id in self.entry_finder:
             self.remove_node(node_id)
 
         # Convert priority string to numeric value
         priority_value = self._get_priority_value(priority)
-        count = self.counter
-        self.counter += 1 # COMMENTED OUT because of double counting
 
         # Store the complete node object
         entry = [
             -priority_value,
-            count,
+            int(node_id),
             node.copy(),
         ]  # Make a copy to prevent reference issues
-        self.entry_finder[node_id] = entry
+
         heapq.heappush(self.queue, entry)
-
-        debate_tree_subject = dependency_registry.get("debate_tree_subject")
-        debate_tree_subject.debate_tree = self.entry_finder
-
-        logger.debug(f"Added/Updated node {node_id} with priority {priority}")
+        self.entry_finder[node_id] = entry.copy() # Issue here was becasue the entry changes one to <removed> after the first pop, but changes queue[0] to <removed> in queue
 
         # Save state after adding node
         self.state_saver.save_node_state(self.entry_finder, "node_add")
+        logger.debug(f"Added/Updated node {node_id} with priority {priority}")
+        
+        # Notify observers of the change
+        self.notify()
 
     def remove_node(self, node_id: str) -> None:
         """Mark an existing node as removed"""
         entry = self.entry_finder.pop(str(node_id))
-        entry[2] = self.REMOVED
+        if entry:
+            entry[2] = self.REMOVED
+        logger.debug(f"Removed node {node_id}")
 
     def pop_node(self) -> Dict[str, Any]:
         """Remove and return the highest priority node"""
@@ -109,6 +122,7 @@ class PriorityQueueService:
     def get_unique_id(self) -> int:
         """Get a unique ID for new nodes"""
         unique_id = self.counter
+        self.counter += 1
         return unique_id
 
     def _get_priority_value(self, priority: Any) -> int:
@@ -135,15 +149,34 @@ class PriorityQueueService:
             and isinstance(existing_entry, (list, tuple))
             and len(existing_entry) >= 3
         ):
-            priority = -existing_entry[0]  # Get original priority
-            self.remove_node(node_id)
+            
+            priority_value = -existing_entry[0]  # Get original priority
+            priority = self._get_priority_from_int_to_str(priority_value) # int to str
+            self.remove_node(node_id) # Remove from entry finder
             self.add_node(node.copy(), priority)  # Make a copy of the node
             logger.debug(f"Updated node {node_id} with preserved priority {priority}")
         else:
             logger.warning(f"Attempted to update non-existent node {node_id}")
             # Use evaluation score as priority if available, otherwise default to MEDIUM
-            priority = node.get("evaluation", "MEDIUMs")
+            score = node.get("evaluation", .5) # Default is 0.5 (MEDIUM)
+            priority = self._get_priority_from_score(score)
             self.add_node(node.copy(), priority)
+
+    def _get_priority_from_int_to_str(self, priority: int) -> str:
+        """Convert priority value to string"""
+        if priority == 3:
+            return "HIGH"
+        if priority == 1:
+            return "LOW"
+        return "MEDIUM"
+    
+    def _get_priority_from_score(self, node_score: float) -> str:
+        """Get priority level based on node score"""
+        if node_score >= debate_traversal_config.HIGH_PRIORITY_THRESHOLD:
+            return "HIGH"
+        if node_score <= debate_traversal_config.LOW_PRIORITY_THRESHOLD:
+            return "LOW"
+        return "MEDIUM"
 
     def node_exists(self, node_id: str) -> bool:
         """Check if a node exists and is not marked as removed"""
@@ -154,3 +187,9 @@ class PriorityQueueService:
             and len(entry) >= 3
             and entry[2] is not self.REMOVED
         )
+
+    def notify(self):
+        logger.debug(
+            f"Tree state changed. Current nodes: {list(self._debate_tree.keys())}"
+        )
+        super().notify()

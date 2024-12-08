@@ -27,7 +27,7 @@ class Subject:
 class DebateTreeSubject(Subject):
     def __init__(self):
         super().__init__()
-        self._debate_tree = None
+        self._debate_tree = {}
 
     @property
     def debate_tree(self):

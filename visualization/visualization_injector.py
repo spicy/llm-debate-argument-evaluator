@@ -1,8 +1,8 @@
 from utils.logger import logger
 
 from .node_score_display import NodeScoreDisplay
-from .observer import DebateTreeSubject
 from .tree_renderer import TreeRenderer
+from .priority_queue_service import PriorityQueueService
 
 
 class VisualizationInjector:
@@ -10,11 +10,15 @@ class VisualizationInjector:
     def inject_visualization_services(registry):
         logger.info("Injecting visualization services")
 
-        debate_tree_subject = DebateTreeSubject()
-        node_score_display = NodeScoreDisplay(debate_tree_subject)
-        tree_renderer = TreeRenderer(debate_tree_subject)
+        # Use PriorityQueueService as the subject
+        priority_queue_service = PriorityQueueService()
 
-        registry.register("debate_tree_subject", debate_tree_subject)
+        # Create visualization components using priority queue as subject
+        node_score_display = NodeScoreDisplay(priority_queue_service)
+        tree_renderer = TreeRenderer(priority_queue_service)
+
+        # Register visualization components
+        registry.register("priority_queue_service", priority_queue_service)
         registry.register("node_score_display", node_score_display)
         registry.register("tree_renderer", tree_renderer)
 

@@ -4,7 +4,6 @@ from .async_processing_service import AsyncProcessingService
 from .evaluation_service import EvaluationService
 from .memoization_service import MemoizationService
 from .model_selection_service import ModelSelectionService
-from .priority_queue_service import PriorityQueueService
 from .score_aggregator_service import ScoreAggregatorService
 from .services_injector import ServicesInjector
 
@@ -15,7 +14,6 @@ __all__ = [
     "EvaluationService",
     "MemoizationService",
     "ModelSelectionService",
-    "PriorityQueueService",
     "ScoreAggregatorService",
     "ServicesInjector",
 ]
