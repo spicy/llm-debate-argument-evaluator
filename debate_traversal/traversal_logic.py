@@ -31,6 +31,7 @@ class TraversalLogic:
 
             # Initialize root node in priority queue if not visited
             if str(root_node["id"]) not in self.visited_nodes:
+                logger.debug(f"Initializing root node {root_node_id}")
                 evaluation = await evaluate_node_func(root_node_id)
                 priority = self._determine_priority(evaluation)
                 self.priority_queue_service.add_node(root_node, priority)
@@ -51,6 +52,7 @@ class TraversalLogic:
                         continue
 
                     # Check depth before processing
+                    logger.debug(f"Current node_id and depth: {current_node_id}, {current_node['depth']}")
                     if current_node["depth"] >= max_depth:
                         logger.debug(
                             f"Reached max depth {max_depth} for node {current_node_id}"
