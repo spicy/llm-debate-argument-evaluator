@@ -34,7 +34,7 @@ class TraversalLogic:
                 logger.debug(f"Initializing root node {root_node_id}")
                 evaluation = await evaluate_node_func(root_node_id)
                 priority = self._determine_priority(evaluation)
-                self.priority_queue_service.add_node(root_node, priority)
+                # self.priority_queue_service.update_node(root_node, priority) update happens in  evluation
                 logger.debug(f"Added root node {root_node_id} to priority queue")
 
             while True:
