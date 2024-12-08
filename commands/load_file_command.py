@@ -86,6 +86,7 @@ class LoadFileCommand:
                         ),
                         "evaluation": evaluation_result,
                         "parent": item.get("parent", -1),
+                        "depth": item.get("depth", 0),
                     }
 
                     # Add to priority queue and processed nodes

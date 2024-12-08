@@ -15,7 +15,7 @@
         "subcategory": "Supply and Demand",
         "parent": 0,
         "evaluation": 0.2,
-        "depth":1
+        "depth": 1
     },
     {
         "argument": "Market competition can lead to monopolies and wealth inequality when left unchecked, requiring regulatory oversight to maintain fair market conditions.",
@@ -24,7 +24,7 @@
         "subcategory": "Price Elasticity",
         "parent": 0,
         "evaluation": 0.5,
-        "depth":1
+        "depth": 1
     },
     {
         "argument": "2Market competition can lead to monopolies and wealth inequality when left unchecked, requiring regulatory oversight to maintain fair market conditions.",
@@ -33,6 +33,6 @@
         "subcategory": "Price Elasticity",
         "parent": 2,
         "evaluation": 0.7,
-        "depth":2
+        "depth": 2
     }
 ]
