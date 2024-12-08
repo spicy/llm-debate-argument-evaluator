@@ -88,7 +88,7 @@ class TreeRenderer(Observer):
         self.graph.clear()
         for node_id, node_data in debate_tree.items():
             # Node data is now the complete node dictionary
-            self._add_node_to_graph(node_id, node_data[-1])
+            self._add_node_to_graph(node_id, node_data)
 
     def _add_node_to_graph(self, node_id: str, node_dict: Dict[str, Any]) -> None:
         """Add a node and its edges to the graph"""
