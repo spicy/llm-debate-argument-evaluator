@@ -13,8 +13,8 @@ class PriorityQueueService(DebateTreeSubject):
 
     def __init__(self):
         super().__init__()
-        self.queue = []
-        self.entry_finder = {}
+        self.queue = [] # Maintain a heap queue for efficient priority handling
+        self.entry_finder = {} # Store node data and priority for quick lookup separate from the queue
         self.counter = 0
         self.state_saver = StateSaver()
         self.PRIORITY_LEVELS = priority_queue_config.PRIORITY_LEVELS
@@ -42,20 +42,20 @@ class PriorityQueueService(DebateTreeSubject):
 
         # Convert priority string to numeric value
         priority_value = self._get_priority_value(priority)
-        count = self.counter
 
         # Store the complete node object
         entry = [
             -priority_value,
-            count,
+            int(node_id),
             node.copy(),
         ]  # Make a copy to prevent reference issues
-        self.entry_finder[node_id] = entry
-        heapq.heappush(self.queue, entry) #ISSUE with this line (heapq.heappush(self.queue, entry)) - TypeError: '<' not supported between instances of 'dict' and 'str'
-        logger.debug(f"Added/Updated node {node_id} with priority {priority}")
+
+        heapq.heappush(self.queue, entry)
+        self.entry_finder[node_id] = entry.copy() # Issue here was becasue the entry changes one to <removed> after the first pop, but changes queue[0] to <removed> in queue
 
         # Save state after adding node
         self.state_saver.save_node_state(self.entry_finder, "node_add")
+        logger.debug(f"Added/Updated node {node_id} with priority {priority}")
         
         # Notify observers of the change
         self.notify()
@@ -150,7 +150,7 @@ class PriorityQueueService(DebateTreeSubject):
             
             priority_value = -existing_entry[0]  # Get original priority
             priority = self._get_priority_from_int_to_str(priority_value) # int to str
-            self.remove_node(node_id)
+            self.remove_node(node_id) # Remove from entry finder
             self.add_node(node.copy(), priority)  # Make a copy of the node
             logger.debug(f"Updated node {node_id} with preserved priority {priority}")
         else:
