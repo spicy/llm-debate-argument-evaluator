@@ -49,6 +49,9 @@ class TraverseDebateCommand:
 
     async def _expand_node(self, node_id: str) -> list:
         """Expand a node and return its children"""
+        # Ignore if notd is root node
+        if node_id == "0":
+            return self.priority_queue_service.get_children(node_id)
         await self.expand_node_command.execute(node_id)
         return self.priority_queue_service.get_children(node_id)
 
