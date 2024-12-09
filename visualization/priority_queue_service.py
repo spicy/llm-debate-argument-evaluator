@@ -15,6 +15,7 @@ class PriorityQueueService(DebateTreeSubject):
         super().__init__()
         self.queue = [] # Maintain a heap queue for efficient priority handling
         self.entry_finder = {} # Store node data and priority for quick lookup separate from the queue
+        self.visited_nodes = {} # Store visited nodes for traversal
         self.counter = 0
         self.state_saver = StateSaver()
         self.PRIORITY_LEVELS = priority_queue_config.PRIORITY_LEVELS
@@ -25,6 +26,8 @@ class PriorityQueueService(DebateTreeSubject):
         if not isinstance(node, dict):
             logger.error(f"Invalid node format: {node}")
             return
+        
+        self.queue = [] # Maintain a heap queue for efficient priority handling
 
         node_id = str(node["id"])
         parent_id = str(node.get("parent", -1))
@@ -35,7 +38,7 @@ class PriorityQueueService(DebateTreeSubject):
                 f"Attempting to add node {node_id} with non-existent parent {parent_id}"
             )
             return
-        self._debate_tree[node_id] = node.copy()
+        self._debate_tree[node_id] = node.copy() # Separate tree for visualizer
 
         if node_id in self.entry_finder:
             self.remove_node(node_id)
@@ -50,8 +53,19 @@ class PriorityQueueService(DebateTreeSubject):
             node.copy(),
         ]  # Make a copy to prevent reference issues
 
-        heapq.heappush(self.queue, entry)
-        self.entry_finder[node_id] = entry.copy() # Issue here was becasue the entry changes one to <removed> after the first pop, but changes queue[0] to <removed> in queue
+        # Add the node to the queue
+        if node_id not in self.visited_nodes:
+            heapq.heappush(self.queue, entry)
+
+        for exist_entry in self.entry_finder.values():
+            if entry[2] == self.REMOVED: # Skip removed nodes
+                continue
+            elif self.visited_nodes.get(str(node_id)): # Skip visited nodes
+                continue 
+            else:
+                heapq.heappush(self.queue, exist_entry) # Add existing nodes to the queue
+        
+        self.entry_finder[node_id] = entry # Store the node in the entry finder
 
         # Save state after adding node
         self.state_saver.save_node_state(self.entry_finder, "node_add")
@@ -134,10 +148,18 @@ class PriorityQueueService(DebateTreeSubject):
         if isinstance(priority, str):
             return priority_map.get(priority.upper(), 2)  # Default to MEDIUM
         return 2  # Default to MEDIUM for unknown types
+    
+    def mark_visited(self, node_id: str) -> None:
+        """Mark a node as visited during traversal"""
+        self.visited_nodes[str(node_id)] = True
+        logger.debug(f"Marked node {node_id} as visited")
+
+    def reset_visited(self) -> None:
+        self.visited_nodes = {}
+        logger.debug("Visited nodes reset")
 
     def update_node(self, node_id: str, node: Dict[str, Any]) -> None:
         """Update an existing node while preserving its priority"""
-        return
         # TODO
         # ISSUE: traversal of the tree is not working as expected
         # When set to return, the tree travesal works, but not the optimal path
@@ -155,10 +177,9 @@ class PriorityQueueService(DebateTreeSubject):
             and isinstance(existing_entry, (list, tuple))
             and len(existing_entry) >= 3
         ):
-            
-            priority_value = -existing_entry[0]  # Get original priority
+            priority_value = -existing_entry[0]  # Get original priority, but new evalaution score
             priority = self._get_priority_from_int_to_str(priority_value) # int to str
-            self.remove_node(node_id) # Remove from entry finder
+            self.remove_node(node_id) # Remove from entry finder 
             self.add_node(node.copy(), priority)  # Make a copy of the node
             logger.debug(f"Updated node {node_id} with preserved priority {priority}")
         else:
