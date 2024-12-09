@@ -70,8 +70,8 @@ class TraverseDebateCommand:
         updated_node["evaluation"] = score
 
         # Update node in priority queue with the same priority
-        current_priority = updated_node.get("evaluation", "MEDIUM")
+        # current_priority = updated_node.get("evaluation", "MEDIUM")
         self.priority_queue_service.update_node(node_id, updated_node)
 
         logger.debug(f"Evaluation result for node {node_id}: {score}")
-        return score
+        # return score

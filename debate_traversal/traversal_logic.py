@@ -32,9 +32,9 @@ class TraversalLogic:
             # Initialize root node in priority queue if not visited
             if str(root_node["id"]) not in self.visited_nodes:
                 logger.debug(f"Initializing root node {root_node_id}")
-                evaluation = await evaluate_node_func(root_node_id)
-                priority = self._determine_priority(evaluation)
-                # self.priority_queue_service.update_node(root_node, priority) update happens in  evluation
+                await evaluate_node_func(root_node_id)
+                # priority = self._determine_priority(evaluation)
+                # self.priority_queue_service.update_node(root_node, priority) # update happens in evaluation
                 logger.debug(f"Added root node {root_node_id} to priority queue")
 
             while True:
@@ -94,6 +94,7 @@ class TraversalLogic:
         """Determine priority based on evaluation score"""
         if isinstance(evaluation, dict):
             # If evaluation is a dict, use the average of scores
+
             score = sum(evaluation.values()) / len(evaluation) if evaluation else 0.5
         else:
             # If evaluation is a number, use it directly
