@@ -16,7 +16,7 @@ class CreateRootNodeCommand:
             "argument": topic,
             "category": "root",
             "topic": topic,
-            "evaluation": 1.0,  # Root node gets highest priority
+            "evaluation": 0.1,  # Root node should get a neutral evaluation (logic .5 * .5 = .25) (accpetance .5 * .1 = .05) (coherence .5 * .2 = .1) (persuasion .5 * .2 = .1) (total = .5)
             "parent": -1,
             "depth": 0,
             "children": [],

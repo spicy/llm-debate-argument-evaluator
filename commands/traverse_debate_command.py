@@ -49,6 +49,9 @@ class TraverseDebateCommand:
 
     async def _expand_node(self, node_id: str) -> list:
         """Expand a node and return its children"""
+        # Ignore if notd is root node
+        if node_id == "0":
+            return self.priority_queue_service.get_children(node_id)
         await self.expand_node_command.execute(node_id)
         return self.priority_queue_service.get_children(node_id)
 
@@ -70,7 +73,7 @@ class TraverseDebateCommand:
         updated_node["evaluation"] = score
 
         # Update node in priority queue with the same priority
-        current_priority = updated_node.get("evaluation", "MEDIUM")
+        # current_priority = updated_node.get("evaluation", "MEDIUM")
         self.priority_queue_service.update_node(node_id, updated_node)
 
         logger.debug(f"Evaluation result for node {node_id}: {score}")
