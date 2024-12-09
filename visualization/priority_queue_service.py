@@ -137,7 +137,6 @@ class PriorityQueueService(DebateTreeSubject):
 
     def update_node(self, node_id: str, node: Dict[str, Any]) -> None:
         """Update an existing node while preserving its priority"""
-        return
         # TODO
         # ISSUE: traversal of the tree is not working as expected
         # When set to return, the tree travesal works, but not the optimal path
