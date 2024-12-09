@@ -36,7 +36,7 @@ class TraversalLogic:
                 logger.debug(f"Initializing root node {root_node_id}")
                 evaluation = await evaluate_node_func(root_node_id)
                 priority = self._determine_priority(evaluation)
-                self.priority_queue_service.update_node(root_node, priority) # update happens in evaluation
+                self.priority_queue_service.add_node(root_node, priority) # update happens in evaluation
                 logger.debug(f"Added root node {root_node_id} to priority queue")
 
             while True:
@@ -45,7 +45,7 @@ class TraversalLogic:
                         logger.debug("Priority queue is empty, ending traversal")
                         break
 
-                    current_node = self.priority_queue_service.pop_node()
+                    current_node = self.priority_queue_service.pop_node() # Get the node with highest priority, remove from queue
                     if not current_node:
                         continue
 
@@ -53,35 +53,30 @@ class TraversalLogic:
                     if current_node_id in self.visited_nodes:
                         continue
 
-                    # Check depth before processing
-                    logger.debug(f"Current node_id and depth: {current_node_id}, {current_node['depth']}")
-                    if current_node["depth"] >= max_depth:
-                        logger.debug(
-                            f"Reached max depth {max_depth} for node {current_node_id}"
-                        )
-                        self.visited_nodes[current_node_id] = current_node
-                        yield current_node
-                        continue
-
                     self.visited_nodes[current_node_id] = current_node
+                    # Allow priority_queue_service to know what nodes have been visited
+                    self.priority_queue_service.mark_visited(current_node_id)
                     logger.debug(f"Visiting node {current_node_id}")
 
-                    # Expand current node
-                    new_nodes = await expand_node_func(current_node_id)
-                    if new_nodes:
-                        for new_node in new_nodes:
-                            new_node_id = str(new_node["id"])
-                            if new_node_id not in self.visited_nodes:
-                                evaluation = await evaluate_node_func(new_node_id)
-                                priority = self._determine_priority(evaluation)
-                                new_node["depth"] = current_node["depth"] + 1
-                                self.priority_queue_service.add_node(new_node, priority)
-                                logger.debug(
-                                    f"Added new node {new_node_id} with priority {priority}"
-                                )
+                    # Expand current node, but only if depth is less than max_depth
+                    if current_node["depth"] < max_depth:
+                        logger.debug(f"Expanding node {current_node_id}")
+                        new_nodes = await expand_node_func(current_node_id)
+                        
+                        if new_nodes:
+                            for new_node in new_nodes:
+                                new_node_id = str(new_node["id"])
+                                if new_node_id not in self.visited_nodes:
+                                    evaluation = await evaluate_node_func(new_node_id)
+                                    priority = self._determine_priority(evaluation)
+                                    new_node["depth"] = current_node["depth"] + 1
+                                    self.priority_queue_service.add_node(new_node, priority)
+                                    logger.debug(
+                                        f"Added new node {new_node_id} with priority {priority}"
+                                    )
 
                     yield current_node
-                    self._track_optimal_path(current_node)
+                    self._track_optimal_path(current_node) # Check if current node is the optimal path
                     self.priority_queue_service.notify()
 
                 except KeyError as e:
