@@ -74,4 +74,4 @@ class TraverseDebateCommand:
         self.priority_queue_service.update_node(node_id, updated_node)
 
         logger.debug(f"Evaluation result for node {node_id}: {score}")
-        # return score
+        return score
