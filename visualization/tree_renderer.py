@@ -1,7 +1,7 @@
 import asyncio
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, List
 
 import networkx as nx
 import pygame as pg
@@ -285,12 +285,21 @@ class TreeRenderer(Observer):
         """Render a single frame of the visualization"""
         self.screen.fill(self.background_color)
         self._draw_edges()
+        self._draw_optimal_path(self.debate_tree_subject.optimal_path)
         self._draw_nodes()
 
         if selected_node:
             self._draw_selected_node_info(selected_node)
 
         pg.display.flip()
+
+    def _draw_optimal_path(self, optimal_path: List[Dict[str, Any]]) -> None:
+        """Draw the optimal path on the graph"""
+        for i in range(len(optimal_path) - 1):
+            if str(optimal_path[i]["id"]) in self.positions and str(optimal_path[i + 1]["id"]) in self.positions:
+                start_pos = self._get_screen_coordinates(self.positions[str(optimal_path[i]["id"])])
+                end_pos = self._get_screen_coordinates(self.positions[str(optimal_path[i + 1]["id"])])
+                pg.draw.line(self.screen, (0, 0, 255), start_pos, end_pos, 2)
 
     def _draw_edges(self) -> None:
         """Draw all edges in the graph"""
