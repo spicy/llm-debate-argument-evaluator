@@ -118,6 +118,8 @@ class TraversalLogic:
                     break
                 node = self.priority_queue_service.get_node(str(parent_id))
             self.optimal_path = list(reversed(path))
+            logger.debug(f"Found new optimal path {self.optimal_path}")
+            self.priority_queue_service.optimal_path = self.optimal_path
 
     def print_optimal_path(self) -> None:
         """Print the optimal path through the debate tree using ASCII characters"""

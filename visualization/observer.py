@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict, Any
 
 
 class Observer(ABC):
@@ -28,6 +28,7 @@ class DebateTreeSubject(Subject):
     def __init__(self):
         super().__init__()
         self._debate_tree = {}
+        self.optimal_path: List[Dict[str, Any]] = []
 
     @property
     def debate_tree(self):
