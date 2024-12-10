@@ -1,5 +1,5 @@
-from utils.logger import log_execution_time, logger
 from config import score_aggregator_config
+from utils.logger import log_execution_time, logger
 
 
 class ScoreAggregatorService:
@@ -43,15 +43,25 @@ class ScoreAggregatorService:
             total_scores[key] /= 2
 
         logger.info(f"Average scores of both models: {total_scores}")
-        
+
         # Influence of each critera has an influence on overall score (cultural acceptance 10%, factual 50%, coherence 20%, persuasion 20%)
         overall_score = 0.0
 
-        overall_score += score_aggregator_config.COHERENCE_INFLUENCE * total_scores["coherence"]
-        overall_score += score_aggregator_config.CULTURAL_ACCEPTANCE_INFLUENCE * total_scores["cultural_acceptance"]
-        overall_score += score_aggregator_config.FACTUAL_ACCURACY_INFLUENCE * total_scores["factual_accuracy"]
-        overall_score += score_aggregator_config.PERSUASION_INFLUENCE * total_scores["persuasion"]
+        overall_score += (
+            score_aggregator_config.COHERENCE_INFLUENCE * total_scores["coherence"]
+        )
+        overall_score += (
+            score_aggregator_config.CULTURAL_ACCEPTANCE_INFLUENCE
+            * total_scores["cultural_acceptance"]
+        )
+        overall_score += (
+            score_aggregator_config.FACTUAL_ACCURACY_INFLUENCE
+            * total_scores["factual_accuracy"]
+        )
+        overall_score += (
+            score_aggregator_config.PERSUASION_INFLUENCE * total_scores["persuasion"]
+        )
 
         logger.info(f"Overall score of node {overall_score} completed")
-        
+
         return overall_score

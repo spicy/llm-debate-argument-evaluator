@@ -1,6 +1,7 @@
 import asyncio
 import math
 from dataclasses import dataclass
+from textwrap import wrap
 from typing import Any, Dict, Optional, Tuple
 
 import networkx as nx
@@ -10,7 +11,6 @@ from pygame import Surface
 from utils.logger import logger
 from visualization.observer import Observer
 from visualization.priority_queue_service import PriorityQueueService
-from textwrap import wrap
 
 
 @dataclass
@@ -35,7 +35,11 @@ class CameraSettings:
 class TreeRenderer(Observer):
     """Renders a visual representation of the debate tree using Pygame"""
 
-    def __init__(self, debate_tree_subject: PriorityQueueService, window_size: Tuple[int, int] = (1200, 800)):
+    def __init__(
+        self,
+        debate_tree_subject: PriorityQueueService,
+        window_size: Tuple[int, int] = (1200, 800),
+    ):
         """Initialize the tree renderer with the given debate tree subject"""
         self.debate_tree_subject = debate_tree_subject
         self.debate_tree_subject.attach(self)
@@ -321,7 +325,7 @@ class TreeRenderer(Observer):
         max_width = 450
         text_width = 50
         text_height = 20
-        
+
         # Split argument into multiple lines if too long
         arguments = wrap(argument, width=text_width)
         # arguments = [argument[i : i + text_width] for i in range(0, len(argument), text_width)]
@@ -332,8 +336,12 @@ class TreeRenderer(Observer):
 
         for i, arg in enumerate(arguments):
             text_surface = self.font.render(arg, True, (0, 0, 0))
-            text_rect = text_surface.get_rect(center=(max_width / 2, i * text_height + 20))
+            text_rect = text_surface.get_rect(
+                center=(max_width / 2, i * text_height + 20)
+            )
             info_surface.blit(text_surface, text_rect)
 
-        info_surface_rect = info_surface.get_rect(midtop = (position[0], position[1] + 50))
+        info_surface_rect = info_surface.get_rect(
+            midtop=(position[0], position[1] + 50)
+        )
         self.screen.blit(info_surface, info_surface_rect)

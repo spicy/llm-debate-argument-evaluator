@@ -1,7 +1,7 @@
 from services.evaluation_service import EvaluationService
-from visualization.priority_queue_service import PriorityQueueService
 from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import log_execution_time, logger
+from visualization.priority_queue_service import PriorityQueueService
 
 
 class SubmitArgumentCommand:

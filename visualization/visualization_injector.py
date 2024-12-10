@@ -1,8 +1,8 @@
 from utils.logger import logger
 
 from .node_score_display import NodeScoreDisplay
-from .tree_renderer import TreeRenderer
 from .priority_queue_service import PriorityQueueService
+from .tree_renderer import TreeRenderer
 
 
 class VisualizationInjector:

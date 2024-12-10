@@ -75,9 +75,9 @@ class ClaudeAPIClient(BaseAPIClient):
 
     def _extract_score(self, response: dict) -> float:
         try:
-            content = (
-                response.get("content", [{}])[0].get("text", "") # Different from CHATGPT to get prompt
-            )
+            content = response.get("content", [{}])[0].get(
+                "text", ""
+            )  # Different from CHATGPT to get prompt
             # Look for "SCORE: X.XX" pattern
             score_match = re.search(r"SCORE:\s*(\d+\.?\d*)", content, re.IGNORECASE)
             if score_match:

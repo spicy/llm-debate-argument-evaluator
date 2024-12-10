@@ -4,9 +4,9 @@ from commands.evaluate_debate_tree_command import EvaluateDebateTreeCommand
 from commands.expand_node_command import ExpandNodeCommand
 from debate_traversal.traversal_logic import TraversalLogic
 from services.evaluation_service import EvaluationService
-from visualization.priority_queue_service import PriorityQueueService
 from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import log_execution_time, logger
+from visualization.priority_queue_service import PriorityQueueService
 
 
 class TraverseDebateCommand:
