@@ -44,7 +44,8 @@ class ScoreAggregatorService:
 
         logger.info(f"Average scores of both models: {total_scores}")
 
-        # Influence of each critera has an influence on overall score (cultural acceptance 10%, factual 50%, coherence 20%, persuasion 20%)
+        # Influence of each critera has an influence on overall score
+        # (cultural acceptance 10%, factual 50%, coherence 20%, persuasion 20%)
         overall_score = 0.0
 
         overall_score += (

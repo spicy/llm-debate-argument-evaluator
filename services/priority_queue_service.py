@@ -37,39 +37,41 @@ class PriorityQueueService(DebateTreeSubject):
                 f"Attempting to add node {node_id} with non-existent parent {parent_id}"
             )
             return
+
+        # Update debate tree first
         self._debate_tree[node_id] = node.copy()
 
+        # Update priority queue
         if node_id in self.entry_finder:
             self.remove_node(node_id)
 
-        # Convert priority string to numeric value
         priority_value = self._get_priority_value(priority)
-
-        # Store the complete node object
         entry = [
             -priority_value,
             int(node_id),
             node.copy(),
-        ]  # Make a copy to prevent reference issues
+        ]
 
         heapq.heappush(self.queue, entry)
-        self.entry_finder[node_id] = (
-            entry.copy()
-        )  # Issue here was becasue the entry changes one to <removed> after the first pop, but changes queue[0] to <removed> in queue
+        self.entry_finder[node_id] = entry.copy()
 
         # Save state after adding node
         self.state_saver.save_node_state(self.entry_finder, "node_add")
         logger.debug(f"Added/Updated node {node_id} with priority {priority}")
 
-        # Notify observers of the change
+        # Notify observers after both tree and queue are updated
         self.notify()
 
     def remove_node(self, node_id: str) -> None:
         """Mark an existing node as removed"""
-        entry = self.entry_finder.pop(str(node_id))
+        node_id = str(node_id)
+        entry = self.entry_finder.pop(node_id, None)
         if entry:
             entry[2] = self.REMOVED
-        logger.debug(f"Removed node {node_id}")
+            # Also remove from debate tree
+            self._debate_tree.pop(node_id, None)
+            logger.debug(f"Removed node {node_id}")
+            self.notify()
 
     def pop_node(self) -> Dict[str, Any]:
         """Remove and return the highest priority node"""
@@ -153,16 +155,17 @@ class PriorityQueueService(DebateTreeSubject):
             and isinstance(existing_entry, (list, tuple))
             and len(existing_entry) >= 3
         ):
+            # Update debate tree first
+            self._debate_tree[node_id] = node.copy()
 
-            priority_value = -existing_entry[0]  # Get original priority
-            priority = self._get_priority_from_int_to_str(priority_value)  # int to str
-            self.remove_node(node_id)  # Remove from entry finder
-            self.add_node(node.copy(), priority)  # Make a copy of the node
+            priority_value = -existing_entry[0]
+            priority = self._get_priority_from_int_to_str(priority_value)
+            self.remove_node(node_id)
+            self.add_node(node.copy(), priority)
             logger.debug(f"Updated node {node_id} with preserved priority {priority}")
         else:
             logger.warning(f"Attempted to update non-existent node {node_id}")
-            # Use evaluation score as priority if available, otherwise default to MEDIUM
-            score = node.get("evaluation", 0.5)  # Default is 0.5 (MEDIUM)
+            score = node.get("evaluation", 0.5)
             priority = self._get_priority_from_score(score)
             self.add_node(node.copy(), priority)
 

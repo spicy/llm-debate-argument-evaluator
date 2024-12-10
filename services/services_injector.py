@@ -9,6 +9,7 @@ from services.async_processing_service import AsyncProcessingService
 from services.evaluation_service import EvaluationService
 from services.memoization_service import MemoizationService
 from services.model_selection_service import ModelSelectionService
+from services.priority_queue_service import PriorityQueueService
 from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import logger
 
@@ -42,6 +43,10 @@ class ServicesInjector:
         memoization_service = MemoizationService(
             semantic_similarity, cache_manager, memoization_config.SIMILARITY_THRESHOLD
         )
+
+        # Initialize priority queue service
+        priority_queue_service = PriorityQueueService()
+        registry.register("priority_queue_service", priority_queue_service)
 
         # Initialize other services
         async_processing_service = AsyncProcessingService()

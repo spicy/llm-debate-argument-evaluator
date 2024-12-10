@@ -1,8 +1,8 @@
 from typing import Any, Dict
 
+from services.priority_queue_service import PriorityQueueService
 from utils.logger import logger
 from visualization.observer import Observer
-from visualization.priority_queue_service import PriorityQueueService
 
 
 class NodeScoreDisplay(Observer):

@@ -8,9 +8,9 @@ import networkx as nx
 import pygame as pg
 from pygame import Surface
 
+from services.priority_queue_service import PriorityQueueService
 from utils.logger import logger
 from visualization.observer import Observer
-from visualization.priority_queue_service import PriorityQueueService
 
 
 @dataclass
