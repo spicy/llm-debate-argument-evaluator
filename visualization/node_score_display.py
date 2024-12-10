@@ -1,14 +1,14 @@
 from typing import Any, Dict
 
-from services.priority_queue_service import PriorityQueueService
+from services.interfaces.queue_service_interface import QueueServiceInterface
 from utils.logger import logger
 from visualization.observer import Observer
 
 
 class NodeScoreDisplay(Observer):
-    def __init__(self, priority_queue_service: PriorityQueueService):
-        self.priority_queue_service = priority_queue_service
-        self.priority_queue_service.attach(self)
+    def __init__(self, queue_service: QueueServiceInterface):
+        self.queue_service = queue_service
+        self.queue_service.attach(self)
 
     def update(self, subject):
         self.display_scores(subject.debate_tree)

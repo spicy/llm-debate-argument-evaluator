@@ -8,7 +8,7 @@ import networkx as nx
 import pygame as pg
 from pygame import Surface
 
-from services.priority_queue_service import PriorityQueueService
+from services.interfaces.queue_service_interface import QueueServiceInterface
 from utils.logger import logger
 from visualization.observer import Observer
 
@@ -37,7 +37,7 @@ class TreeRenderer(Observer):
 
     def __init__(
         self,
-        debate_tree_subject: PriorityQueueService,
+        debate_tree_subject: QueueServiceInterface,
         window_size: Tuple[int, int] = (1200, 800),
     ):
         """Initialize the tree renderer with the given debate tree subject"""

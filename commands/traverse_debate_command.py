@@ -4,7 +4,7 @@ from commands.evaluate_debate_tree_command import EvaluateDebateTreeCommand
 from commands.expand_node_command import ExpandNodeCommand
 from debate_traversal.traversal_logic import TraversalLogic
 from services.evaluation_service import EvaluationService
-from services.priority_queue_service import PriorityQueueService
+from services.interfaces.queue_service_interface import QueueServiceInterface
 from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import log_execution_time, logger
 
@@ -13,7 +13,7 @@ class TraverseDebateCommand:
     def __init__(
         self,
         traversal_logic: TraversalLogic,
-        priority_queue_service: PriorityQueueService,
+        priority_queue_service: QueueServiceInterface,
         expand_node_command: ExpandNodeCommand,
         evaluate_tree_command: EvaluateDebateTreeCommand,
         evaluation_service: EvaluationService,
@@ -30,6 +30,11 @@ class TraverseDebateCommand:
     async def execute(self, root_node_id: str, max_depth: int) -> None:
         try:
             logger.info(f"Starting debate traversal from node: {root_node_id}")
+
+            # Validate root node exists
+            if not self._validate_node_exists(root_node_id):
+                logger.error(f"Root node {root_node_id} does not exist")
+                return
 
             async for node in self.traversal_logic.traverse(
                 root_node_id,
@@ -75,3 +80,7 @@ class TraverseDebateCommand:
 
         logger.debug(f"Evaluation result for node {node_id}: {score}")
         return score
+
+    def _validate_node_exists(self, node_id: str) -> bool:
+        """Validate that a node exists in the priority queue"""
+        return self.priority_queue_service.node_exists(str(node_id))

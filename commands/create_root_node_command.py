@@ -1,9 +1,9 @@
-from services.priority_queue_service import PriorityQueueService
+from services.interfaces.queue_service_interface import QueueServiceInterface
 from utils.logger import log_execution_time, logger
 
 
 class CreateRootNodeCommand:
-    def __init__(self, priority_queue_service: PriorityQueueService):
+    def __init__(self, priority_queue_service: QueueServiceInterface):
         self.priority_queue_service = priority_queue_service
 
     @log_execution_time

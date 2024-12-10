@@ -22,3 +22,18 @@ class Subject:
     def notify(self):
         for observer in self._observers:
             observer.update(self)
+
+
+class DebateTreeSubject(Subject):
+    def __init__(self):
+        super().__init__()
+        self._debate_tree = {}
+
+    @property
+    def debate_tree(self):
+        return self._debate_tree
+
+    @debate_tree.setter
+    def debate_tree(self, value):
+        self._debate_tree = value
+        self.notify()

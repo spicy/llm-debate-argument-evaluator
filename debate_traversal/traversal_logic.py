@@ -2,12 +2,12 @@ from typing import Any, Dict, List
 
 from config.debate_traversal_config import debate_traversal_config
 from config.debate_tree_config import debate_tree_config
-from services.priority_queue_service import PriorityQueueService
+from services.interfaces.queue_service_interface import QueueServiceInterface
 from utils.logger import logger
 
 
 class TraversalLogic:
-    def __init__(self, priority_queue_service: PriorityQueueService):
+    def __init__(self, priority_queue_service: QueueServiceInterface):
         self.priority_queue_service = priority_queue_service
         self.visited_nodes: Dict[str, Any] = {}
         self.optimal_path: List[Dict[str, Any]] = []
@@ -61,6 +61,9 @@ class TraversalLogic:
 
                     self.visited_nodes[current_node_id] = current_node
                     logger.debug(f"Visiting node {current_node_id}")
+
+                    # Re-add the node to maintain tree structure
+                    self.priority_queue_service.add_node(current_node, "VISITED")
 
                     # Expand current node
                     new_nodes = await expand_node_func(current_node_id)

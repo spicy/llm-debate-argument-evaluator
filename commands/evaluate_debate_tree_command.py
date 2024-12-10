@@ -1,5 +1,5 @@
 from services.evaluation_service import EvaluationService
-from services.priority_queue_service import PriorityQueueService
+from services.interfaces.queue_service_interface import QueueServiceInterface
 from services.score_aggregator_service import ScoreAggregatorService
 from utils.logger import log_execution_time, logger
 
@@ -8,7 +8,7 @@ class EvaluateDebateTreeCommand:
     def __init__(
         self,
         evaluation_service: EvaluationService,
-        priority_queue_service: PriorityQueueService,
+        priority_queue_service: QueueServiceInterface,
         score_aggregator_service: ScoreAggregatorService,
     ):
         self.evaluation_service = evaluation_service

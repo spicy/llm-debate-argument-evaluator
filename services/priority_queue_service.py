@@ -1,18 +1,20 @@
 import heapq
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from config.debate_traversal_config import debate_traversal_config
 from config.priority_queue_config import priority_queue_config
+from services.interfaces.queue_service_interface import QueueServiceInterface
 from utils.logger import logger
 from utils.state_saver import StateSaver
-from visualization.observer import DebateTreeSubject
+from visualization.observer import Subject
 
 
-class PriorityQueueService(DebateTreeSubject):
+class PriorityQueueService(Subject, QueueServiceInterface):
     REMOVED = "<removed>"
 
     def __init__(self):
         super().__init__()
+        self._debate_tree = {}
         self.queue = []  # Maintain a heap queue for efficient priority handling
         self.entry_finder = (
             {}
@@ -21,6 +23,10 @@ class PriorityQueueService(DebateTreeSubject):
         self.state_saver = StateSaver()
         self.PRIORITY_LEVELS = priority_queue_config.PRIORITY_LEVELS
         logger.info("PriorityQueueService initialized")
+
+    @property
+    def debate_tree(self) -> Dict[str, Any]:
+        return self._debate_tree
 
     def add_node(self, node: Dict[str, Any], priority: str = "MEDIUM") -> None:
         """Add a new node or update existing node"""
@@ -31,12 +37,23 @@ class PriorityQueueService(DebateTreeSubject):
         node_id = str(node["id"])
         parent_id = str(node.get("parent", -1))
 
-        # Ensure parent exists in tree before adding child
-        if parent_id != "-1" and parent_id not in self._debate_tree:
-            logger.warning(
-                f"Attempting to add node {node_id} with non-existent parent {parent_id}"
+        # Special handling for root node or nodes with no parent
+        if parent_id == "-1":
+            self._add_node_to_tree(node, priority)
+            return
+
+        # Check if parent exists before adding child
+        if parent_id not in self._debate_tree:
+            logger.error(
+                f"Cannot add node {node_id}: Parent {parent_id} does not exist"
             )
             return
+
+        self._add_node_to_tree(node, priority)
+
+    def _add_node_to_tree(self, node: Dict[str, Any], priority: str) -> None:
+        """Helper method to add node to both tree and queue"""
+        node_id = str(node["id"])
 
         # Update debate tree first
         self._debate_tree[node_id] = node.copy()
@@ -46,82 +63,87 @@ class PriorityQueueService(DebateTreeSubject):
             self.remove_node(node_id)
 
         priority_value = self._get_priority_value(priority)
-        entry = [
+        count = self.counter
+        self.counter += 1
+
+        entry = (
             -priority_value,
+            count,
             int(node_id),
             node.copy(),
-        ]
+        )
 
         heapq.heappush(self.queue, entry)
-        self.entry_finder[node_id] = entry.copy()
+        self.entry_finder[node_id] = entry
 
-        # Save state after adding node
+        # Save state and notify observers
         self.state_saver.save_node_state(self.entry_finder, "node_add")
         logger.debug(f"Added/Updated node {node_id} with priority {priority}")
-
-        # Notify observers after both tree and queue are updated
         self.notify()
 
     def remove_node(self, node_id: str) -> None:
-        """Mark an existing node as removed"""
+        """Mark an existing node as removed from queue but keep in debate tree"""
         node_id = str(node_id)
         entry = self.entry_finder.pop(node_id, None)
         if entry:
-            entry[2] = self.REMOVED
-            # Also remove from debate tree
-            self._debate_tree.pop(node_id, None)
-            logger.debug(f"Removed node {node_id}")
+            # Only mark as removed in queue, don't remove from debate tree
+            self.entry_finder[node_id] = (
+                entry[0],  # priority
+                entry[1],  # count
+                entry[2],  # node_id
+                self.REMOVED,  # mark as removed
+            )
+            logger.debug(f"Marked node {node_id} as removed from queue")
             self.notify()
 
     def pop_node(self) -> Dict[str, Any]:
         """Remove and return the highest priority node"""
         while self.queue:
-            priority, count, node = heapq.heappop(self.queue)
+            priority, count, node_id, node = heapq.heappop(self.queue)
             if node is not self.REMOVED:
-                node_id = str(node["id"])
-                # Don't remove from entry_finder to preserve node data
+                # Don't remove from debate tree, just return a copy
                 logger.debug(f"Popped node {node_id} with priority {-priority}")
-                return node.copy()  # Return a copy to prevent modifications
+                return node.copy()
         raise KeyError("pop from an empty priority queue")
 
     def get_node(self, node_id: str) -> Optional[Dict[str, Any]]:
         """Get node data from entry_finder"""
         entry = self.entry_finder.get(str(node_id))
-        if not entry or not isinstance(entry, (list, tuple)) or len(entry) < 3:
+        if not entry or not isinstance(entry, tuple) or len(entry) < 4:
             logger.warning(f"Node {node_id} not found or invalid entry format")
             return None
 
-        node = entry[2]
+        node = entry[3]  # Node data is at index 3
         if node is self.REMOVED:
             return None
-
-        # Return a copy of the node to prevent accidental modifications
         return node.copy() if isinstance(node, dict) else None
 
     def get_children(self, parent_id: str) -> List[Dict[str, Any]]:
         """Get all children of a node"""
         children = []
         for entry in self.entry_finder.values():
-            if not isinstance(entry, (list, tuple)) or len(entry) < 3:
+            if not isinstance(entry, tuple) or len(entry) < 4:
                 continue
-            node = entry[2]
+            node = entry[3]  # Node data is at index 3
             if isinstance(node, dict) and node is not self.REMOVED:
                 if str(node.get("parent")) == str(parent_id):
-                    children.append(node)
+                    children.append(node.copy())
         return children
 
     def get_all_nodes(self) -> Dict[str, Dict[str, Any]]:
         """Get all nodes in the priority queue"""
         return {
-            node_id: entry[2]
+            node_id: entry[3].copy()  # Node data is at index 3
             for node_id, entry in self.entry_finder.items()
-            if entry[2] is not self.REMOVED
+            if entry[3] is not self.REMOVED
         }
 
     def is_empty(self) -> bool:
         """Check if the priority queue is empty"""
         # Clean up any REMOVED entries from the queue
-        while self.queue and self.queue[0][2] is self.REMOVED:
+        while (
+            self.queue and self.queue[0][3] is self.REMOVED
+        ):  # Check index 3 for node data
             heapq.heappop(self.queue)
         return len(self.queue) == 0
 
@@ -152,8 +174,8 @@ class PriorityQueueService(DebateTreeSubject):
 
         if (
             existing_entry
-            and isinstance(existing_entry, (list, tuple))
-            and len(existing_entry) >= 3
+            and isinstance(existing_entry, tuple)
+            and len(existing_entry) >= 4
         ):
             # Update debate tree first
             self._debate_tree[node_id] = node.copy()
@@ -190,9 +212,9 @@ class PriorityQueueService(DebateTreeSubject):
         entry = self.entry_finder.get(str(node_id))
         return (
             entry is not None
-            and isinstance(entry, (list, tuple))
-            and len(entry) >= 3
-            and entry[2] is not self.REMOVED
+            and isinstance(entry, tuple)
+            and len(entry) >= 4
+            and entry[3] is not self.REMOVED
         )
 
     def notify(self):
