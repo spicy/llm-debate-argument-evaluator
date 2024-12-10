@@ -35,19 +35,22 @@ class ScoreAggregatorService:
             "factual_accuracy": 0.0,
         }
 
+        num_models = len(evaluation_results)
+        if num_models == 0:
+            logger.warning("No evaluation results provided")
+            return 0.0
+
         for scores in evaluation_results.values():
             for criterion, score in scores.items():
                 total_scores[criterion] += score
 
         for key in total_scores.keys():
-            total_scores[key] /= 2
+            total_scores[key] /= num_models
 
-        logger.info(f"Average scores of both models: {total_scores}")
+        logger.info(f"Average scores across {num_models} models: {total_scores}")
 
-        # Influence of each critera has an influence on overall score
-        # (cultural acceptance 10%, factual 50%, coherence 20%, persuasion 20%)
+        # Calculate weighted overall score based on influence factors
         overall_score = 0.0
-
         overall_score += (
             score_aggregator_config.COHERENCE_INFLUENCE * total_scores["coherence"]
         )
@@ -63,6 +66,5 @@ class ScoreAggregatorService:
             score_aggregator_config.PERSUASION_INFLUENCE * total_scores["persuasion"]
         )
 
-        logger.info(f"Overall score of node {overall_score} completed")
-
+        logger.info(f"Overall score: {overall_score}")
         return overall_score

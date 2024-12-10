@@ -56,7 +56,7 @@ class ExpandNodeCommand:
             return []
 
     async def _create_child_node(
-        self, parent_node: Dict, argument: str
+        self, parent_node: Dict, argument: str, arg_type: str
     ) -> Optional[Dict]:
         """Helper method to create and evaluate a child node"""
         try:
@@ -74,6 +74,7 @@ class ExpandNodeCommand:
                 "evaluation": score,
                 "parent": parent_node["id"],
                 "depth": parent_node.get("depth", 0) + 1,
+                "argument_type": arg_type,
             }
 
             priority = self._determine_priority(score)

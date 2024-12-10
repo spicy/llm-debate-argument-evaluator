@@ -8,6 +8,7 @@ import networkx as nx
 import pygame as pg
 from pygame import Surface
 
+from config.visualization_config import visualization_config
 from services.interfaces.queue_service_interface import QueueServiceInterface
 from utils.logger import logger
 from visualization.observer import Observer
@@ -18,9 +19,17 @@ class NodeVisualProperties:
     """Visual properties for rendering nodes"""
 
     radius: int = 20
-    padding: int = 50
+    padding: int = 100
     font_size: int = 24
     small_font_size: int = 16
+    node_outline_width: int = 2
+    node_label_offset: int = 10
+    node_info_panel_width: int = 450
+    node_info_text_width: int = 50
+    node_info_text_height: int = 20
+    node_info_panel_padding: int = 15
+    node_info_vertical_offset: int = 50
+    node_info_text_vertical_offset: int = 20
 
 
 @dataclass
@@ -29,7 +38,19 @@ class CameraSettings:
 
     offset_x: float
     offset_y: float
-    zoom: float = 0.7
+    zoom: float = 0.9
+    pan_step: int = 100
+    zoom_factor: float = 1.1
+
+
+@dataclass
+class LayoutSettings:
+    """Settings for graph layout calculations"""
+
+    vertical_scale: float = 1
+    vertical_range: float = 1
+    horizontal_space_usage: float = 0.7  # Use 70% of horizontal space
+    screen_space_usage: float = 0.7  # Use 70% of available width/height
 
 
 class TreeRenderer(Observer):
@@ -38,7 +59,7 @@ class TreeRenderer(Observer):
     def __init__(
         self,
         debate_tree_subject: QueueServiceInterface,
-        window_size: Tuple[int, int] = (1200, 800),
+        window_size: Tuple[int, int] = (1920, 1080),
     ):
         """Initialize the tree renderer with the given debate tree subject"""
         self.debate_tree_subject = debate_tree_subject
@@ -51,6 +72,7 @@ class TreeRenderer(Observer):
         # Initialize graph components
         self.positions = {}
         self.graph = nx.DiGraph()
+        self.layout_settings = LayoutSettings()
 
         logger.info("TreeRenderer initialized")
 
@@ -70,7 +92,7 @@ class TreeRenderer(Observer):
         self.camera = CameraSettings(
             offset_x=self.screen.get_width() / 2, offset_y=self.screen.get_height() / 2
         )
-        self.background_color = (240, 240, 240)
+        self.background_color = (210, 210, 210)
         self.font = pg.font.Font(None, self.visual_props.font_size)
         self.small_font = pg.font.Font(None, self.visual_props.small_font_size)
 
@@ -101,6 +123,7 @@ class TreeRenderer(Observer):
             argument=node_dict.get("argument", ""),
             evaluation=node_dict.get("evaluation", 0),
             category=node_dict.get("category", ""),
+            parent=node_dict.get("parent"),
         )
 
         parent = node_dict.get("parent")
@@ -108,18 +131,50 @@ class TreeRenderer(Observer):
             self.graph.add_edge(str(parent), node_id)
 
     def _calculate_layout(self) -> None:
-        """Calculate the layout positions for all nodes"""
+        """Calculate the layout positions for all nodes in a vertical tree structure"""
         if not self.graph.nodes():
             return
 
-        # Calculate initial positions with more spread
-        self.positions = nx.spring_layout(self.graph, k=3, iterations=50)
+        # Find root node (node with no incoming edges)
+        root_nodes = [n for n, d in self.graph.in_degree() if d == 0]
+        if not root_nodes:
+            return
+
+        root = root_nodes[0]
+
+        # Calculate depths for all nodes
+        depths = nx.single_source_shortest_path_length(self.graph, root)
+        max_depth = max(depths.values())
+
+        # Group nodes by depth
+        nodes_by_depth = {}
+        for node, depth in depths.items():
+            if depth not in nodes_by_depth:
+                nodes_by_depth[depth] = []
+            nodes_by_depth[depth].append(node)
+
+        # Calculate positions
+        self.positions = {}
+        for depth, nodes in nodes_by_depth.items():
+            # Vertical position based on depth
+            y = (depth / max(1, max_depth)) * self.layout_settings.vertical_range - (
+                self.layout_settings.vertical_range / 2
+            )
+
+            # Horizontal position spreads nodes at the same depth
+            for i, node in enumerate(nodes):
+                x = (
+                    (i - (len(nodes) - 1) / 2)
+                    / max(1, len(nodes))
+                    * self.layout_settings.horizontal_space_usage
+                )
+                self.positions[node] = (x, y)
 
         # Scale positions to fit screen
         self._scale_positions_to_screen()
 
     def _scale_positions_to_screen(self) -> None:
-        """Scale node positions to fit within the screen bounds"""
+        """Scale node positions to fit within the screen bounds with vertical orientation"""
         if not self.positions:
             return
 
@@ -127,9 +182,29 @@ class TreeRenderer(Observer):
         available_space = self._get_available_space()
 
         for node in self.positions:
-            self.positions[node] = self._calculate_screen_position(
-                self.positions[node], bounds, available_space
+            pos = self.positions[node]
+            x_norm = (
+                (pos[0] - bounds[0]) / (bounds[1] - bounds[0])
+                if bounds[1] != bounds[0]
+                else 0
             )
+            y_norm = (
+                (pos[1] - bounds[2]) / (bounds[3] - bounds[2])
+                if bounds[3] != bounds[2]
+                else 0
+            )
+
+            x_screen = (
+                x_norm * available_space[0] * self.layout_settings.screen_space_usage
+            ) - (available_space[0] * self.layout_settings.screen_space_usage / 2)
+            y_screen = (
+                y_norm
+                * available_space[1]
+                * self.layout_settings.vertical_scale
+                * self.layout_settings.screen_space_usage
+            ) - (available_space[1] * self.layout_settings.screen_space_usage / 2)
+
+            self.positions[node] = (x_screen, y_screen)
 
     def _get_position_bounds(self) -> Tuple[float, float, float, float]:
         """Get the bounds of all node positions"""
@@ -172,21 +247,36 @@ class TreeRenderer(Observer):
         """Draw a node and its labels"""
         screen_pos = self._get_screen_coordinates(pos)
 
-        # Draw node circle
-        self._draw_node_circle(screen_pos, node_data.get("evaluation", 0.5))
+        # Draw node circle with full node data
+        self._draw_node_circle(screen_pos, node_data)
 
         # Draw labels
-        self._draw_node_labels(screen_pos, node_id, node_data.get("category", ""))
+        is_root = node_data.get("parent") == -1
+        self._draw_node_labels(screen_pos, node_id, "root" if is_root else "")
 
     def _get_screen_coordinates(self, pos: Tuple[float, float]) -> Tuple[int, int]:
         """Convert graph coordinates to screen coordinates"""
         return (int(pos[0] + self.camera.offset_x), int(pos[1] + self.camera.offset_y))
 
-    def _draw_node_circle(self, screen_pos: Tuple[int, int], evaluation: float) -> None:
-        """Draw the node circle with evaluation-based color"""
-        color = self._get_node_color(evaluation)
+    def _draw_node_circle(self, screen_pos: Tuple[int, int], node_data: Dict) -> None:
+        """Draw the node circle with evaluation-based color and argument type border"""
+        # Fill color based on evaluation
+        color = self._get_node_color(node_data.get("evaluation", 0.5))
         pg.draw.circle(self.screen, color, screen_pos, self.visual_props.radius)
-        pg.draw.circle(self.screen, (0, 0, 0), screen_pos, self.visual_props.radius, 2)
+
+        # Border color based on argument type
+        arg_type = node_data.get("argument_type", "root")
+        border_color = visualization_config.BORDER_COLORS.get(
+            arg_type, visualization_config.BORDER_COLORS["root"]
+        )
+
+        pg.draw.circle(
+            self.screen,
+            border_color,
+            screen_pos,
+            self.visual_props.radius,
+            visualization_config.BORDER_WIDTH,
+        )
 
     def _get_node_color(self, score: float) -> Tuple[int, int, int]:
         """Convert evaluation score to RGB color"""
@@ -205,7 +295,9 @@ class TreeRenderer(Observer):
                 (0, 0, 0),
                 (
                     screen_pos[0],
-                    screen_pos[1] - self.visual_props.radius - 10,
+                    screen_pos[1]
+                    - self.visual_props.radius
+                    - self.visual_props.node_label_offset,
                 ),
             )
 
@@ -273,17 +365,17 @@ class TreeRenderer(Observer):
     def _handle_keyboard_input(self, key: int) -> None:
         """Handle keyboard input for camera controls"""
         if key == pg.K_EQUALS:
-            self.camera.zoom *= 1.1
+            self.camera.zoom *= self.camera.zoom_factor
         elif key == pg.K_MINUS:
-            self.camera.zoom /= 1.1
+            self.camera.zoom /= self.camera.zoom_factor
         elif key == pg.K_LEFT:
-            self.camera.offset_x += 50
+            self.camera.offset_x += self.camera.pan_step
         elif key == pg.K_RIGHT:
-            self.camera.offset_x -= 50
+            self.camera.offset_x -= self.camera.pan_step
         elif key == pg.K_UP:
-            self.camera.offset_y += 50
+            self.camera.offset_y += self.camera.pan_step
         elif key == pg.K_DOWN:
-            self.camera.offset_y -= 50
+            self.camera.offset_y -= self.camera.pan_step
 
     def _render_frame(self, selected_node: Optional[str]) -> None:
         """Render a single frame of the visualization"""
@@ -302,7 +394,13 @@ class TreeRenderer(Observer):
             if edge[0] in self.positions and edge[1] in self.positions:
                 start_pos = self._get_screen_coordinates(self.positions[edge[0]])
                 end_pos = self._get_screen_coordinates(self.positions[edge[1]])
-                pg.draw.line(self.screen, (0, 0, 0), start_pos, end_pos, 2)
+                pg.draw.line(
+                    self.screen,
+                    (0, 0, 0),
+                    start_pos,
+                    end_pos,
+                    self.visual_props.node_outline_width,
+                )
 
     def _draw_nodes(self) -> None:
         """Draw all nodes in the graph"""
@@ -322,26 +420,34 @@ class TreeRenderer(Observer):
 
     def _draw_argument_info(self, argument: str, position: list[int, int]) -> None:
         """Draw argument information panel"""
-        max_width = 450
-        text_width = 50
-        text_height = 20
-
         # Split argument into multiple lines if too long
-        arguments = wrap(argument, width=text_width)
-        # arguments = [argument[i : i + text_width] for i in range(0, len(argument), text_width)]
+        arguments = wrap(argument, width=self.visual_props.node_info_text_width)
 
         argument = argument
-        info_surface = Surface((max_width, len(arguments) * text_height + 15))
+        info_surface = Surface(
+            (
+                self.visual_props.node_info_panel_width,
+                len(arguments) * self.visual_props.node_info_text_height
+                + self.visual_props.node_info_panel_padding,
+            )
+        )
         info_surface.fill((200, 200, 200))
 
         for i, arg in enumerate(arguments):
             text_surface = self.font.render(arg, True, (0, 0, 0))
             text_rect = text_surface.get_rect(
-                center=(max_width / 2, i * text_height + 20)
+                center=(
+                    self.visual_props.node_info_panel_width / 2,
+                    i * self.visual_props.node_info_text_height
+                    + self.visual_props.node_info_text_vertical_offset,
+                )
             )
             info_surface.blit(text_surface, text_rect)
 
         info_surface_rect = info_surface.get_rect(
-            midtop=(position[0], position[1] + 50)
+            midtop=(
+                position[0],
+                position[1] + self.visual_props.node_info_vertical_offset,
+            )
         )
         self.screen.blit(info_surface, info_surface_rect)
