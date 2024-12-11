@@ -19,11 +19,12 @@ class CommandInjector:
         evaluation_service = registry.get("evaluation_service")
         argument_generation_service = registry.get("argument_generation_service")
         score_aggregator_service = registry.get("score_aggregator_service")
+        async_processing_service = registry.get("async_processing_service")
 
         # Create and register basic commands
         create_root_node_command = CreateRootNodeCommand(priority_queue_service)
         generate_debate_arguments_command = GenerateDebateArgumentsCommand(
-            argument_generation_service
+            argument_generation_service, async_processing_service
         )
         evaluate_debate_tree_command = EvaluateDebateTreeCommand(
             evaluation_service,
@@ -45,6 +46,7 @@ class CommandInjector:
                 evaluation_service,
                 priority_queue_service,
                 score_aggregator_service,
+                async_processing_service,
             ),
         )
 
@@ -54,6 +56,7 @@ class CommandInjector:
                 evaluation_service,
                 priority_queue_service,
                 score_aggregator_service,
+                async_processing_service,
             ),
         )
 
@@ -63,6 +66,7 @@ class CommandInjector:
                 evaluation_service,
                 priority_queue_service,
                 score_aggregator_service,
+                async_processing_service,
             ),
         )
 
@@ -76,6 +80,7 @@ class CommandInjector:
                 registry.get("evaluate_debate_tree_command"),
                 evaluation_service,
                 registry.get("score_aggregator_service"),
+                async_processing_service,
             ),
         )
 
@@ -87,6 +92,7 @@ class CommandInjector:
                 registry.get("expand_node_command"),
                 registry.get("evaluate_debate_tree_command"),
                 registry.get("traverse_debate_command"),
+                async_processing_service,
             ),
         )
 

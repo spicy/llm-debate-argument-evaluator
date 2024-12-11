@@ -16,6 +16,28 @@ class EvaluateDebateTreeCommand:
         self.score_aggregator_service = score_aggregator_service
 
     @log_execution_time
+    async def execute_single_node(self, node_id: str) -> dict:
+        """Evaluates a single node in the debate tree"""
+        logger.info(f"Evaluating single node: {node_id}")
+
+        node = self.priority_queue_service.get_node(node_id)
+        if not node:
+            logger.error(f"Node {node_id} not found")
+            return None
+
+        evaluation_result = await self.evaluation_service.evaluate_argument(
+            node["argument"]
+        )
+        score = self.score_aggregator_service.average_scores(evaluation_result)
+
+        # Update node with evaluation
+        node["evaluation"] = score
+        self.priority_queue_service.update_node(node_id, node)
+
+        logger.info(f"Completed evaluation of node {node_id}")
+        return score
+
+    @log_execution_time
     async def execute(self):
         """Evaluates all nodes in the debate tree"""
         logger.info("Starting debate tree evaluation")
