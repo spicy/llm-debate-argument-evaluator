@@ -3,6 +3,7 @@ from typing import Any, Dict
 from commands.evaluate_debate_tree_command import EvaluateDebateTreeCommand
 from commands.expand_node_command import ExpandNodeCommand
 from debate_traversal.traversal_logic import TraversalLogic
+from services.async_processing_service import AsyncProcessingService
 from services.evaluation_service import EvaluationService
 from services.interfaces.queue_service_interface import QueueServiceInterface
 from services.score_aggregator_service import ScoreAggregatorService
@@ -18,6 +19,7 @@ class TraverseDebateCommand:
         evaluate_tree_command: EvaluateDebateTreeCommand,
         evaluation_service: EvaluationService,
         score_aggregator_service: ScoreAggregatorService,
+        async_processing_service: AsyncProcessingService,
     ):
         self.traversal_logic = traversal_logic
         self.priority_queue_service = priority_queue_service
@@ -25,6 +27,7 @@ class TraverseDebateCommand:
         self.evaluate_tree_command = evaluate_tree_command
         self.evaluation_service = evaluation_service
         self.score_aggregator_service = score_aggregator_service
+        self.async_service = async_processing_service
 
     @log_execution_time
     async def execute(self, root_node_id: str, max_depth: int) -> None:
@@ -43,7 +46,9 @@ class TraverseDebateCommand:
                 self._evaluate_node,
                 max_depth,
             ):
-                logger.debug(f"Traversed node: {node['id']}")
+                # Queue the node for evaluation immediately after traversal
+                await self.async_service.queue_evaluation(node)
+                logger.debug(f"Traversed and queued node: {node['id']}")
 
             # Print the optimal path after traversal
             self.traversal_logic.print_optimal_path()
@@ -54,7 +59,16 @@ class TraverseDebateCommand:
 
     async def _expand_node(self, node_id: str) -> list:
         """Expand a node and return its children"""
-        await self.expand_node_command.execute(node_id)
+        # Process expansion asynchronously
+        expansion_task = await self.async_service.process_async(
+            self.expand_node_command.execute(node_id)
+        )
+        children = await expansion_task
+
+        # Queue each child for evaluation
+        for child in children:
+            await self.async_service.queue_evaluation(child)
+
         return self.priority_queue_service.get_children(node_id)
 
     async def _evaluate_node(self, node_id: str) -> dict:
@@ -64,19 +78,22 @@ class TraverseDebateCommand:
             logger.warning(f"Node {node_id} not found during evaluation")
             return {}
 
-        # Evaluate only the specific node instead of the entire tree
-        evaluation_result = await self.evaluation_service.evaluate_argument(
-            node["argument"]
+        # Process evaluation asynchronously
+        evaluation_task = await self.async_service.process_async(
+            self.evaluation_service.evaluate_argument(node["argument"])
         )
+        evaluation_result = await evaluation_task
         score = self.score_aggregator_service.average_scores(evaluation_result)
 
         # Create a copy of the node and update it
         updated_node = node.copy()
         updated_node["evaluation"] = score
 
-        # Update node in priority queue with the same priority
-        current_priority = updated_node.get("evaluation", "MEDIUM")
+        # Update node in priority queue
         self.priority_queue_service.update_node(node_id, updated_node)
+
+        # Queue the node for traversal after evaluation
+        await self.async_service.queue_traversal(node_id)
 
         logger.debug(f"Evaluation result for node {node_id}: {score}")
         return score

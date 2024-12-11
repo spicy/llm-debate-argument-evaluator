@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 from commands.generate_debate_arguments_command import GenerateDebateArgumentsCommand
 from config import debate_traversal_config, debate_tree_config
+from services.async_processing_service import AsyncProcessingService
 from services.evaluation_service import EvaluationService
 from services.priority_queue_service import PriorityQueueService
 from services.score_aggregator_service import ScoreAggregatorService
@@ -15,13 +16,14 @@ class ExpandNodeCommand:
         evaluation_service: EvaluationService,
         priority_queue_service: PriorityQueueService,
         score_aggregator_service: ScoreAggregatorService,
+        async_processing_service: AsyncProcessingService,
     ):
         self.generate_debate_arguments_command = generate_debate_arguments_command
         self.evaluation_service = evaluation_service
         self.priority_queue_service = priority_queue_service
         self.score_aggregator_service = score_aggregator_service
+        self.async_service = async_processing_service
 
-    @log_execution_time
     async def execute(self, node_id: str):
         """Expands a node by generating and adding child arguments"""
         logger.debug(f"Attempting to expand node with ID {node_id}")
@@ -43,15 +45,17 @@ class ExpandNodeCommand:
                 node["argument"], node.get("category", "general")
             )
 
-            new_nodes = []
+            tasks = []
             for arg_info in argument_data:
                 new_node = await self._create_child_node(
                     node, arg_info["text"], arg_info["type"]
                 )
                 if new_node:
-                    new_nodes.append(new_node)
+                    # Queue the new node for evaluation
+                    await self.async_service.queue_evaluation(new_node)
+                    tasks.append(new_node)
 
-            return new_nodes
+            return tasks
 
         except Exception as e:
             logger.error(f"Error expanding node {node_id}: {str(e)}")
