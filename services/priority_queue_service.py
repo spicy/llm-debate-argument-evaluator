@@ -15,6 +15,7 @@ class PriorityQueueService(Subject, QueueServiceInterface):
     def __init__(self):
         super().__init__()
         self._debate_tree = {}
+        self.optimal_path: List[Dict[str, Any]] = []
         self.queue = []  # Maintain a heap queue for efficient priority handling
         self.entry_finder = (
             {}
