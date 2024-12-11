@@ -1,6 +1,5 @@
 import asyncio
 import math
-from dataclasses import dataclass
 from textwrap import wrap
 from typing import Any, Dict, Optional, Tuple
 
@@ -217,7 +216,12 @@ class TreeRenderer(Observer):
 
         # Draw labels
         is_root = node_data.get("parent") == -1
-        self._draw_node_labels(screen_pos, node_id, "root" if is_root else "")
+        self._draw_node_labels(
+            screen_pos,
+            node_id,
+            node_data.get("evaluation", 0),
+            "root" if is_root else "",
+        )
 
     def _get_screen_coordinates(self, pos: Tuple[float, float]) -> Tuple[int, int]:
         """Convert graph coordinates to screen coordinates"""
@@ -254,7 +258,11 @@ class TreeRenderer(Observer):
         return (r, g, 0)
 
     def _draw_node_labels(
-        self, screen_pos: Tuple[int, int], node_id: str, category: str
+        self,
+        screen_pos: Tuple[int, int],
+        node_id: str,
+        evaluation: float,
+        category: str,
     ) -> None:
         """Draw node ID and category labels"""
         if category:
@@ -270,7 +278,9 @@ class TreeRenderer(Observer):
                 ),
             )
 
-        self._draw_text(str(node_id), self.small_font, (0, 0, 0), screen_pos)
+        # Draw node ID and evaluation together
+        label = f"{node_id} ({evaluation:.2f})"
+        self._draw_text(label, self.small_font, (0, 0, 0), screen_pos)
 
     def _draw_text(
         self,

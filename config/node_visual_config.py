@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class NodeVisualConfig:
     """Visual properties for rendering nodes"""
 
-    radius: int = 20
+    radius: int = 30
     padding: int = 100
     font_size: int = 24
     small_font_size: int = 16
