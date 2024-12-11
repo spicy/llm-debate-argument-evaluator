@@ -127,6 +127,7 @@ class TraversalLogic:
         if total_score > self.best_score:
             self.best_score = total_score
             self.optimal_path = list(reversed(path))  # Store path from root to leaf
+            self.priority_queue_service.optimal_path = self.optimal_path
             logger.debug(
                 f"New optimal path found with score {total_score}. "
                 f"Path: {' -> '.join(str(n['id']) for n in self.optimal_path)}"
