@@ -8,49 +8,13 @@ import networkx as nx
 import pygame as pg
 from pygame import Surface
 
+from config.camera_config import CameraConfig
+from config.layout_config import layout_config
+from config.node_visual_config import node_visual_config
 from config.visualization_config import visualization_config
 from services.interfaces.queue_service_interface import QueueServiceInterface
 from utils.logger import logger
 from visualization.observer import Observer
-
-
-@dataclass
-class NodeVisualProperties:
-    """Visual properties for rendering nodes"""
-
-    radius: int = 20
-    padding: int = 100
-    font_size: int = 24
-    small_font_size: int = 16
-    node_outline_width: int = 2
-    node_label_offset: int = 10
-    node_info_panel_width: int = 450
-    node_info_text_width: int = 50
-    node_info_text_height: int = 20
-    node_info_panel_padding: int = 15
-    node_info_vertical_offset: int = 50
-    node_info_text_vertical_offset: int = 20
-
-
-@dataclass
-class CameraSettings:
-    """Camera/view settings for the visualization"""
-
-    offset_x: float
-    offset_y: float
-    zoom: float = 0.9
-    pan_step: int = 100
-    zoom_factor: float = 1.1
-
-
-@dataclass
-class LayoutSettings:
-    """Settings for graph layout calculations"""
-
-    vertical_scale: float = 1
-    vertical_range: float = 1
-    horizontal_space_usage: float = 0.7  # Use 70% of horizontal space
-    screen_space_usage: float = 0.7  # Use 70% of available width/height
 
 
 class TreeRenderer(Observer):
@@ -72,7 +36,7 @@ class TreeRenderer(Observer):
         # Initialize graph components
         self.positions = {}
         self.graph = nx.DiGraph()
-        self.layout_settings = LayoutSettings()
+        self.layout_settings = layout_config
 
         logger.info("TreeRenderer initialized")
 
@@ -88,8 +52,8 @@ class TreeRenderer(Observer):
 
     def _init_visual_properties(self) -> None:
         """Initialize visual properties and settings"""
-        self.visual_props = NodeVisualProperties()
-        self.camera = CameraSettings(
+        self.visual_props = node_visual_config
+        self.camera = CameraConfig(
             offset_x=self.screen.get_width() / 2, offset_y=self.screen.get_height() / 2
         )
         self.background_color = (210, 210, 210)
@@ -124,6 +88,7 @@ class TreeRenderer(Observer):
             evaluation=node_dict.get("evaluation", 0),
             category=node_dict.get("category", ""),
             parent=node_dict.get("parent"),
+            argument_type=node_dict.get("argument_type", "root"),
         )
 
         parent = node_dict.get("parent")
@@ -269,6 +234,10 @@ class TreeRenderer(Observer):
         border_color = visualization_config.BORDER_COLORS.get(
             arg_type, visualization_config.BORDER_COLORS["root"]
         )
+
+        # Convert hex color to RGB if needed
+        if isinstance(border_color, str) and border_color.startswith("#"):
+            border_color = tuple(int(border_color[i : i + 2], 16) for i in (1, 3, 5))
 
         pg.draw.circle(
             self.screen,

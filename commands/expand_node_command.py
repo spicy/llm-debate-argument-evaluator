@@ -39,13 +39,15 @@ class ExpandNodeCommand:
             return existing_children
 
         try:
-            arguments = await self.generate_debate_arguments_command.execute(
+            argument_data = await self.generate_debate_arguments_command.execute(
                 node["argument"], node.get("category", "general")
             )
 
             new_nodes = []
-            for argument in arguments:
-                new_node = await self._create_child_node(node, argument)
+            for arg_info in argument_data:
+                new_node = await self._create_child_node(
+                    node, arg_info["text"], arg_info["type"]
+                )
                 if new_node:
                     new_nodes.append(new_node)
 

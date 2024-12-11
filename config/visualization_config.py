@@ -6,9 +6,9 @@ class VisualizationConfig:
     }
 
     BORDER_COLORS = {
-        "supporting": "#4CAF50",  # Green
-        "against": "#F44336",  # Red
-        "root": "#2196F3",  # Blue
+        "supporting": "#0000FF",  # Blue
+        "against": "#FF0000",  # Red
+        "root": "#000000",  # Black
     }
 
     BORDER_WIDTH = 3

@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from config.environment import environment_config
 from evaluation.api_clients.base_api_client import BaseAPIClient
@@ -22,7 +22,7 @@ class ArgumentGenerationService:
         support_prompt: str,
         against_prompt: str,
         num_arguments_per_side: int = 3,
-    ) -> List[str]:
+    ) -> List[Dict]:
         tasks_supporting = [
             self.api_client.generate("supporting", support_prompt)
             for _ in range(num_arguments_per_side)
@@ -35,4 +35,11 @@ class ArgumentGenerationService:
         arguments_supporting = await run_async_tasks(tasks_supporting)
         arguments_against = await run_async_tasks(tasks_against)
 
-        return arguments_supporting + arguments_against
+        # Convert to list of dicts with argument type
+        result = []
+        for arg in arguments_supporting:
+            result.append({"text": arg, "type": "supporting"})
+        for arg in arguments_against:
+            result.append({"text": arg, "type": "against"})
+
+        return result
