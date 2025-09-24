@@ -1,8 +1,11 @@
-from dataclasses import dataclass
+"""
+TODO: This module...
+"""
+
+from config.base_config import BaseConfig
 
 
-@dataclass
-class CameraConfig:
+class CameraConfig(BaseConfig):
     """Camera/view settings for the visualization"""
 
     offset_x: float = 0.0
@@ -12,4 +15,4 @@ class CameraConfig:
     zoom_factor: float = 1.1
 
 
-camera_config = CameraConfig()
+camera_config: CameraConfig = CameraConfig()

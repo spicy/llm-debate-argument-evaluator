@@ -1,8 +1,15 @@
-class EvaluationConfig:
-    COHERENCE = "coherence"
-    PERSUASION = "persuasion"
-    CULTURAL_ACCEPTANCE = "cultural_acceptance"
-    FACTUAL_ACCURACY = "factual_accuracy"
+"""
+TODO: This module...
+"""
+
+from config.base_config import BaseConfig
 
 
-evaluation_config = EvaluationConfig()
+class EvaluationConfig(BaseConfig):
+    COHERENCE: str = "coherence"
+    PERSUASION: str = "persuasion"
+    CULTURAL_ACCEPTANCE: str = "cultural_acceptance"
+    FACTUAL_ACCURACY: str = "factual_accuracy"
+
+
+evaluation_config: EvaluationConfig = EvaluationConfig()

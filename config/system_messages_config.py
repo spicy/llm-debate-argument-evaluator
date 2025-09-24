@@ -1,5 +1,14 @@
-class SystemMessagesConfig:
-    EVALUATION_MESSAGES = {
+"""
+TODO: This module...
+"""
+
+from typing import Dict
+
+from config.base_config import BaseConfig
+
+
+class SystemMessagesConfig(BaseConfig):
+    EVALUATION_MESSAGES: Dict[str, str] = {
         "coherence": """
 You are an AI assistant evaluating argument coherence on a scale of 0 to 1.
 Guidelines for coherence scoring:
@@ -46,7 +55,7 @@ Format your response as: "SCORE: [number]\\n\\nExplanation: [your explanation]"
 """,
     }
 
-    GENERATION_MESSAGES = {
+    GENERATION_MESSAGES: Dict[str, str] = {
         "supporting": """
 You are an AI assistant generating a supporting argument.
 Guidelines for argument generation:
@@ -72,4 +81,4 @@ Generate a single, well-structured counter-argument.
     }
 
 
-system_messages_config = SystemMessagesConfig()
+system_messages_config: SystemMessagesConfig = SystemMessagesConfig()

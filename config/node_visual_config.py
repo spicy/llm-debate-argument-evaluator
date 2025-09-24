@@ -1,8 +1,11 @@
-from dataclasses import dataclass
+"""
+TODO: This module...
+"""
+
+from config.base_config import BaseConfig
 
 
-@dataclass
-class NodeVisualConfig:
+class NodeVisualConfig(BaseConfig):
     """Visual properties for rendering nodes"""
 
     radius: int = 30
@@ -18,5 +21,14 @@ class NodeVisualConfig:
     node_info_vertical_offset: int = 50
     node_info_text_vertical_offset: int = 20
 
+    # Colors for pygame renderer
+    background_color: str = "#2c3e50"  # Dark blue-gray background
+    node_color_optimal: str = "#ff9800"  # Orange for optimal path
+    node_color_high: str = "#4caf50"  # Green for high scores
+    node_color_medium: str = "#ffc107"  # Yellow for medium scores
+    node_color_low: str = "#f44336"  # Red for low scores
+    edge_color: str = "#ecf0f1"  # Light gray for regular edges
+    edge_color_optimal: str = "#9b59b6"  # Purple for optimal path edges
 
-node_visual_config = NodeVisualConfig()
+
+node_visual_config: NodeVisualConfig = NodeVisualConfig()

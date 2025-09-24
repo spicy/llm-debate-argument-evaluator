@@ -1,51 +1,60 @@
-from services.async_processing_service import AsyncProcessingService
-from services.evaluation_service import EvaluationService
-from services.priority_queue_service import PriorityQueueService
-from services.score_aggregator_service import ScoreAggregatorService
-from utils.logger import log_execution_time, logger
+"""
+SubmitArgumentCommand - Submit user-provided arguments to the tree.
+
+This command allows users to manually add arguments to the debate tree
+by reusing the common node creation logic.
+"""
+
+from typing import Dict, Optional
+
+from commands.create_node_command import CreateNodeCommand
+from features.tree.multi_tree_state_service import MultiTreeStateService
+from utils.logger import logger
 
 
 class SubmitArgumentCommand:
     def __init__(
         self,
-        evaluation_service: EvaluationService,
-        priority_queue_service: PriorityQueueService,
-        score_aggregator_service: ScoreAggregatorService,
-        async_processing_service: AsyncProcessingService,
+        create_node_command: CreateNodeCommand,
+        tree_state_service: MultiTreeStateService,
     ):
-        self.evaluation_service = evaluation_service
-        self.priority_queue_service = priority_queue_service
-        self.score_aggregator_service = score_aggregator_service
-        self.async_service = async_processing_service
+        """Initialize the command with node creation logic."""
+        self.create_node_command = create_node_command
+        self.tree_state_service = tree_state_service
 
-    @log_execution_time
-    async def execute(self, argument: str, category: str):
-        logger.debug(f"Submitting and evaluating argument in category: {category}")
+    async def execute(
+        self, parent_node_id: int, argument: str, arg_type: str
+    ) -> Optional[Dict]:
+        """
+        Submit a new user argument to the tree.
 
-        # Evaluate the submitted argument asynchronously
-        evaluation_task = await self.async_service.process_async(
-            self.evaluation_service.evaluate_argument(argument)
+        Args:
+            parent_node_id: ID of the parent node to attach to
+            argument: The argument text
+            arg_type: Type of argument (support, oppose, etc.)
+
+        Returns:
+            Created node if successful, None otherwise
+        """
+        logger.info(
+            f"Submitting new {arg_type} argument for parent node {parent_node_id}"
         )
 
-        evaluation_results = await evaluation_task
-        evaluation_result = self.score_aggregator_service.average_scores(
-            evaluation_results
+        # Validate parent node exists
+        if not self.tree_state_service.get_node(str(parent_node_id)):
+            logger.error(f"Parent node {parent_node_id} not found")
+            return None
+
+        # Use the shared node creation logic
+        new_node = await self.create_node_command.execute(
+            argument=argument, arg_type=arg_type, parent_node_id=parent_node_id
         )
 
-        logger.debug("Argument evaluation completed")
+        if new_node:
+            logger.info(
+                f"Successfully submitted argument with node ID: {new_node['id']}"
+            )
+        else:
+            logger.error("Failed to submit argument")
 
-        # Create a new node with the argument and its evaluation
-        new_node = {
-            "id": self.priority_queue_service.get_unique_id(),
-            "argument": argument,
-            "category": category,
-            "topic": "User Submitted",
-            "subtopic": category,
-            "evaluation": evaluation_result,
-            "parent": -1,
-        }
-
-        # Queue the new node for evaluation
-        await self.async_service.queue_evaluation(new_node)
-
-        logger.debug("New node queued for evaluation")
+        return new_node

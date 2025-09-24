@@ -1,3 +1,7 @@
+"""
+TODO: This module...
+"""
+
 import json
 from datetime import datetime
 from pathlib import Path
@@ -8,6 +12,7 @@ from utils.logger import logger
 
 class StateSaver:
     def __init__(self, save_dir: str = "debug_states"):
+        """TODO: Add Simple Docstring"""
         self.save_dir = Path(save_dir)
         self.save_dir.mkdir(exist_ok=True)
 

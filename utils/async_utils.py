@@ -1,3 +1,7 @@
+"""
+TODO: This module...
+"""
+
 import asyncio
 from typing import Any, Coroutine, List
 
@@ -13,17 +17,3 @@ async def run_async_tasks(tasks: List[Coroutine]) -> List[Any]:
     results = await asyncio.gather(*tasks)
     logger.debug(f"Completed {len(tasks)} async tasks")
     return results
-
-
-async def run_with_timeout(coroutine: Coroutine, timeout: float) -> Any:
-    """
-    Run a coroutine with a timeout.
-    """
-    try:
-        logger.debug(f"Running coroutine with {timeout}s timeout")
-        result = await asyncio.wait_for(coroutine, timeout=timeout)
-        logger.debug("Coroutine completed within timeout")
-        return result
-    except asyncio.TimeoutError:
-        logger.warning(f"Coroutine timed out after {timeout}s")
-        raise
